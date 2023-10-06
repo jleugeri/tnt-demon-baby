@@ -15,6 +15,8 @@ module tt_um_jleugeri_demon_baby #( parameter MAX_COUNT = 10_000_000 ) (
 
     // set up direction of bidirectional IOs
     assign uio_oe = 8'b11111111;
+    assign uo_out = 8'b11111111;
+    assign uio_out = 8'b11111111;
 
 
     always @(posedge clk) begin
