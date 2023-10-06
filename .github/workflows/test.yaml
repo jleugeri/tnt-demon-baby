@@ -17,6 +17,7 @@ jobs:
           python-override: true
           github-token: ${{ secrets.GITHUB_TOKEN }}
     - run: | 
+        sudo apt install libffi7
         yosys --version
         iverilog -V
         cocotb-config --libpython
