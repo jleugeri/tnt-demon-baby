@@ -10,9 +10,12 @@ Your milage may vary.
 
 ## Uh ... wat?
 
-Each TTT is an abstract "token", which is created by a processor when certain conditions are met, and then expires after a fixed amount of time. See the picture below.
+Each TTT is an abstract "token", which is created by a processor when certain conditions are met, and then expires after a fixed amount of time. See the figure 1 below.
 
-![Logic implemented by a TickTockToken Processor.](event_processor.svg)
+
+| Figure 1: | Figure 2: |
+|-----------|-----------|
+| ![Logic implemented by a TickTockToken Processor.](event_processor.svg) | ![The routing between the processors.](routing_architecture.svg) |
 
 The lifetime of each token is tracked by a timer within the issuing processor, which begins counting down once a token is generated. When the timer runs out (or the token is otherwise terminated), I say that token has *expired*.
 

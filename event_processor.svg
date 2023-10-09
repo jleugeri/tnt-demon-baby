@@ -3,8 +3,8 @@
 
 <svg
    width="125mm"
-   height="190mm"
-   viewBox="0 0 125 190"
+   height="185mm"
+   viewBox="0 0 125 185"
    version="1.1"
    id="svg1"
    inkscape:version="1.3 (0e150ed, 2023-07-21)"
@@ -24,19 +24,19 @@
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
      showgrid="true"
-     inkscape:zoom="0.91815032"
-     inkscape:cx="257.03852"
-     inkscape:cy="377.93376"
+     inkscape:zoom="0.99356708"
+     inkscape:cx="327.10424"
+     inkscape:cy="355.28552"
      inkscape:window-width="1512"
-     inkscape:window-height="945"
+     inkscape:window-height="917"
      inkscape:window-x="0"
-     inkscape:window-y="37"
+     inkscape:window-y="65"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1">
     <inkscape:grid
        id="grid1"
        units="mm"
-       originx="0"
+       originx="3.5527137e-15"
        originy="0"
        spacingx="0.99999999"
        spacingy="1"
@@ -127,25 +127,6 @@
          d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
          style="fill:context-stroke;fill-rule:evenodd;stroke:none"
          id="path8-7-2-1-7-6-2-9" />
-    </marker>
-    <marker
-       style="overflow:visible"
-       id="RoundedArrow-1"
-       refX="3"
-       refY="0"
-       orient="auto-start-reverse"
-       inkscape:stockid="Rounded arrow"
-       markerWidth="0.75"
-       markerHeight="0.75"
-       viewBox="0 0 1 1"
-       inkscape:isstock="true"
-       inkscape:collect="always"
-       preserveAspectRatio="xMidYMid">
-      <path
-         transform="scale(0.7)"
-         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
-         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
-         id="path8-7" />
     </marker>
     <marker
        style="overflow:visible"
@@ -298,25 +279,6 @@
          d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
          style="fill:context-stroke;fill-rule:evenodd;stroke:none"
          id="path8-7-2-1-7-6-2-9-4" />
-    </marker>
-    <marker
-       style="overflow:visible"
-       id="RoundedArrow-1-6"
-       refX="3"
-       refY="0"
-       orient="auto-start-reverse"
-       inkscape:stockid="Rounded arrow"
-       markerWidth="0.75"
-       markerHeight="0.75"
-       viewBox="0 0 1 1"
-       inkscape:isstock="true"
-       inkscape:collect="always"
-       preserveAspectRatio="xMidYMid">
-      <path
-         transform="scale(0.7)"
-         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
-         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
-         id="path8-7-4" />
     </marker>
     <marker
        style="overflow:visible"
@@ -489,17 +451,55 @@
          style="fill:context-stroke;fill-rule:evenodd;stroke:none"
          id="path8-7-2-2-4-8-2-9-8-3-1" />
     </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-1-3-4-9-2-76-8-79"
+       refX="3"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="0.75"
+       markerHeight="0.75"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-7-2-2-4-8-2-9-6" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-1-3-4-9-2-76-8-79-7"
+       refX="3"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="0.75"
+       markerHeight="0.75"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-7-2-2-4-8-2-9-6-9" />
+    </marker>
   </defs>
   <g
      inkscape:label="Layer 1"
      inkscape:groupmode="layer"
      id="layer1"
-     transform="translate(-5,-5)">
+     transform="translate(-5,-10)">
     <rect
        style="fill:#d3d7cf;stroke-width:6.20863"
        id="rect5-6-0-9"
        width="125"
-       height="190"
+       height="185"
        x="5"
        y="-195"
        transform="scale(1,-1)" />
@@ -510,13 +510,6 @@
        height="65"
        x="10"
        y="34.999996" />
-    <rect
-       style="fill:#eeeeec;stroke-width:1.11401"
-       id="rect5-6-0-0-5"
-       width="55.000004"
-       height="14.999999"
-       x="10"
-       y="15" />
     <g
        id="g10-1-31"
        transform="rotate(90,51.710404,68.289569)">
@@ -556,22 +549,6 @@
          x="-51.587502"
          y="25.441984"
          id="tspan2">token count</tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:5.64444px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:3, 3;stroke-dashoffset:0"
-       x="19.986336"
-       y="20.959354"
-       id="text15-9-0-7-0"><tspan
-         sodipodi:role="line"
-         style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
-         x="19.986336"
-         y="20.959354"
-         id="tspan26-5-3">good</tspan><tspan
-         sodipodi:role="line"
-         style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
-         x="19.986336"
-         y="28.014904"
-         id="tspan4">tokens</tspan></text>
     <g
        id="g17-8"
        transform="translate(-4.9999923,-89.999981)">
@@ -657,84 +634,6 @@
        d="m 47.499993,72.610437 v 6.16875"
        id="path19-9-3-6-0-55"
        sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;stroke:#75507b;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1)"
-       d="m 39.999999,24.999996 c 0,5 0,5 3.941674,13.941673"
-       id="path33"
-       sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;stroke:#75507b;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1)"
-       d="m 54.999999,24.999996 c 0,5 0,5 -3.412496,12.88334"
-       id="path34"
-       sodipodi:nodetypes="cc" />
-    <g
-       id="g18-6-6"
-       transform="matrix(0.5,0,0,0.5,25.866678,-32.823097)">
-      <circle
-         style="fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         id="path17-8-6-7"
-         cx="52.503445"
-         cy="138.81601"
-         r="7.5" />
-      <text
-         xml:space="preserve"
-         style="font-size:14.1111px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#ffffff;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         x="52.5"
-         y="142.47125"
-         id="text17-5-4-2"><tspan
-           sodipodi:role="line"
-           id="tspan17-3-4-0"
-           style="font-size:14.1111px;fill:#ffffff;stroke-width:1"
-           x="52.5"
-           y="142.47125">-</tspan></text>
-    </g>
-    <g
-       id="g18-6-6-7"
-       transform="matrix(0.5,0,0,0.5,17.446723,-32.849672)">
-      <circle
-         style="fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         id="path17-8-6-7-26"
-         cx="52.503445"
-         cy="138.81601"
-         r="7.5" />
-      <text
-         xml:space="preserve"
-         style="font-size:14.1111px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#ffffff;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         x="52.503445"
-         y="143.78728"
-         id="text17-5-4-2-8"><tspan
-           sodipodi:role="line"
-           id="tspan17-3-4-0-8"
-           style="font-size:14.1111px;fill:#ffffff;stroke-width:1"
-           x="52.503445"
-           y="143.78728">+</tspan></text>
-    </g>
-    <text
-       xml:space="preserve"
-       style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-       x="39.54248"
-       y="22.919195"
-       id="text34"><tspan
-         sodipodi:role="line"
-         id="tspan34"
-         style="fill:#75507b;stroke-width:1"
-         x="39.54248"
-         y="22.919195">t<tspan
-   style="font-size:65%;baseline-shift:sub;fill:#75507b"
-   id="tspan35">start</tspan></tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-       x="55.528416"
-       y="23.153799"
-       id="text34-1"><tspan
-         sodipodi:role="line"
-         id="tspan34-5"
-         style="fill:#75507b;stroke-width:1"
-         x="55.528416"
-         y="23.153799">t<tspan
-   style="font-size:65%;baseline-shift:sub;fill:#75507b"
-   id="tspan35-2">stop</tspan></tspan></text>
     <rect
        style="fill:#eeeeec;stroke-width:3.72013"
        id="rect5-6-0"
@@ -1056,6 +955,18 @@
     <text
        xml:space="preserve"
        style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
+       x="47.500008"
+       y="27.354164"
+       id="text34-3-6"><tspan
+         sodipodi:role="line"
+         id="tspan13"
+         x="47.500008"
+         y="27.354164">Δ<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan14">good</tspan></tspan></text>
+    <text
+       xml:space="preserve"
+       style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
        x="55"
        y="184.70833"
        id="text34-3-4"><tspan
@@ -1091,13 +1002,6 @@
        height="65"
        x="70"
        y="34.999996" />
-    <rect
-       style="fill:#eeeeec;stroke-width:1.11401"
-       id="rect5-6-0-0-5-1"
-       width="55.000004"
-       height="14.999999"
-       x="70"
-       y="15" />
     <g
        id="g10-1-31-1"
        transform="rotate(90,81.710407,98.289572)">
@@ -1139,31 +1043,15 @@
          id="tspan2-9">token count</tspan></text>
     <text
        xml:space="preserve"
-       style="font-size:5.64444px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:3, 3;stroke-dashoffset:0"
-       x="79.986343"
-       y="20.959354"
-       id="text15-9-0-7-0-3"><tspan
-         sodipodi:role="line"
-         style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
-         x="79.986343"
-         y="20.959354"
-         id="tspan26-5-3-2">bad</tspan><tspan
-         sodipodi:role="line"
-         style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
-         x="79.986343"
-         y="28.014904"
-         id="tspan4-5">tokens</tspan></text>
-    <text
-       xml:space="preserve"
        style="font-size:8.46667px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#ffffff;stroke:#000000;stroke-width:1;stroke-dasharray:3, 3;stroke-dashoffset:0"
-       x="67.431099"
-       y="12.744573"
+       x="67.163719"
+       y="20.872301"
        id="text15-9-0-7-0-3-1"><tspan
          sodipodi:role="line"
          style="font-size:8.46667px;fill:#ffffff;stroke:none;stroke-width:1"
-         x="67.431099"
-         y="12.744573"
-         id="tspan4-5-3">TickTockToken Processor</tspan></text>
+         x="67.163719"
+         y="20.872301"
+         id="tspan4-5-3">TickTockToken Processor Core</tspan></text>
     <g
        id="g17-8-9"
        transform="translate(55.000013,-89.99998)">
@@ -1250,63 +1138,6 @@
        id="path19-9-3-6-0-55-3"
        sodipodi:nodetypes="cc" />
     <path
-       style="fill:none;stroke:#75507b;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-6)"
-       d="m 100,24.999996 c 0,5 0,5 3.94168,13.941673"
-       id="path33-0"
-       sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;stroke:#75507b;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-6)"
-       d="m 115,24.999996 c 0,5 0,5 -3.41249,12.88334"
-       id="path34-1"
-       sodipodi:nodetypes="cc" />
-    <g
-       id="g18-6-6-6"
-       transform="matrix(0.5,0,0,0.5,85.866683,-32.823097)">
-      <circle
-         style="fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         id="path17-8-6-7-5"
-         cx="52.503445"
-         cy="138.81601"
-         r="7.5" />
-      <text
-         xml:space="preserve"
-         style="font-size:14.1111px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#ffffff;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         x="52.5"
-         y="142.47125"
-         id="text17-5-4-2-9"><tspan
-           sodipodi:role="line"
-           id="tspan17-3-4-0-5"
-           style="font-size:14.1111px;fill:#ffffff;stroke-width:1"
-           x="52.5"
-           y="142.47125">-</tspan></text>
-    </g>
-    <text
-       xml:space="preserve"
-       style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-       x="99.54248"
-       y="22.919195"
-       id="text34-8"><tspan
-         sodipodi:role="line"
-         id="tspan34-59"
-         style="fill:#75507b;stroke-width:1"
-         x="99.54248"
-         y="22.919195">t<tspan
-   style="font-size:65%;baseline-shift:sub;fill:#75507b"
-   id="tspan35-14">start</tspan></tspan></text>
-    <text
-       xml:space="preserve"
-       style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-       x="115.52842"
-       y="23.153799"
-       id="text34-1-0"><tspan
-         sodipodi:role="line"
-         id="tspan34-5-6"
-         style="fill:#75507b;stroke-width:1"
-         x="115.52842"
-         y="23.153799">t<tspan
-   style="font-size:65%;baseline-shift:sub;fill:#75507b"
-   id="tspan35-2-2">stop</tspan></tspan></text>
-    <path
        style="fill:none;stroke:#cc0000;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-6-5-7-8-0-8-8)"
        d="M 107.50001,95.000002 C 107.50001,105 85.000002,105 75.000002,105 c -5,0 -5.991901,6.28356 -10.000001,10.29166"
        id="path19-9-3-6-0-5-9-2"
@@ -1365,27 +1196,6 @@
          sodipodi:nodetypes="cc" />
     </g>
     <g
-       id="g18"
-       transform="matrix(0.5,0,0,0.5,77.458442,-32.823097)">
-      <circle
-         style="fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         id="circle17"
-         cx="52.503445"
-         cy="138.81601"
-         r="7.5" />
-      <text
-         xml:space="preserve"
-         style="font-size:14.1111px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#ffffff;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         x="52.503445"
-         y="143.78728"
-         id="text18"><tspan
-           sodipodi:role="line"
-           id="tspan18"
-           style="font-size:14.1111px;fill:#ffffff;stroke-width:1"
-           x="52.503445"
-           y="143.78728">+</tspan></text>
-    </g>
-    <g
        id="g20"
        transform="matrix(0,1,1,0,-174.90969,40.592102)"
        style="fill:none;stroke:#75507b">
@@ -1409,6 +1219,16 @@
        style="fill:none;stroke:#5c3566;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8)"
        d="M 95.000001,178.4125 V 162.64585"
        id="path22"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#5c3566;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8-79)"
+       d="m 47.500008,30 v 7.883336"
+       id="path22-6"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#5c3566;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8-79-7)"
+       d="m 107.50001,30.000001 v 7.883336"
+       id="path22-6-5"
        sodipodi:nodetypes="cc" />
     <path
        style="fill:none;stroke:#ad7fa8;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8-7)"
@@ -1456,5 +1276,17 @@
        d="m 37.25519,79.840611 -0.0427,-4.84061"
        id="path10"
        sodipodi:nodetypes="cc" />
+    <text
+       xml:space="preserve"
+       style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
+       x="107.50001"
+       y="27.354166"
+       id="text16"><tspan
+         sodipodi:role="line"
+         id="tspan16"
+         x="107.50001"
+         y="27.354166">Δ<tspan
+   style="font-size:65%;baseline-shift:sub"
+   id="tspan15">bad</tspan></tspan></text>
   </g>
 </svg>
