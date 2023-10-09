@@ -139,7 +139,9 @@ module tt_um_jleugeri_event_processor_core #(
     end
 
     always_ff @(posedge clock_slow) begin
-        if (!reset) begin
+        if (reset) begin
+            remaining_duration <= 0;
+        end else begin
             if (isOn && startCountdown && !startedCountdown) begin
                 remaining_duration <= duration;
                 startedCountdown <= 1;
