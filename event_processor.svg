@@ -3,12 +3,12 @@
 
 <svg
    width="125mm"
-   height="205mm"
-   viewBox="0 0 125 205"
+   height="190mm"
+   viewBox="0 0 125 190"
    version="1.1"
    id="svg1"
    inkscape:version="1.3 (0e150ed, 2023-07-21)"
-   sodipodi:docname="event_procesor.svg"
+   sodipodi:docname="event_processor.svg"
    xmlns:inkscape="http://www.inkscape.org/namespaces/inkscape"
    xmlns:sodipodi="http://sodipodi.sourceforge.net/DTD/sodipodi-0.dtd"
    xmlns="http://www.w3.org/2000/svg"
@@ -23,22 +23,22 @@
      inkscape:pagecheckerboard="0"
      inkscape:deskcolor="#d1d1d1"
      inkscape:document-units="mm"
-     showgrid="false"
+     showgrid="true"
      inkscape:zoom="0.91815032"
-     inkscape:cx="158.47078"
-     inkscape:cy="358.8737"
+     inkscape:cx="257.03852"
+     inkscape:cy="377.93376"
      inkscape:window-width="1512"
-     inkscape:window-height="844"
+     inkscape:window-height="945"
      inkscape:window-x="0"
-     inkscape:window-y="38"
+     inkscape:window-y="37"
      inkscape:window-maximized="0"
      inkscape:current-layer="layer1">
     <inkscape:grid
        id="grid1"
        units="mm"
-       originx="-18.897638"
-       originy="-18.897638"
-       spacingx="0.99999998"
+       originx="0"
+       originy="0"
+       spacingx="0.99999999"
        spacingy="1"
        empcolor="#0099e5"
        empopacity="0.30196078"
@@ -48,7 +48,7 @@
        dotted="false"
        gridanglex="30"
        gridanglez="30"
-       visible="false" />
+       visible="true" />
   </sodipodi:namedview>
   <defs
      id="defs1">
@@ -165,25 +165,6 @@
          d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
          style="fill:context-stroke;fill-rule:evenodd;stroke:none"
          id="path8-7-2-1-7" />
-    </marker>
-    <marker
-       style="overflow:visible"
-       id="RoundedArrow-1-3-4-9-2"
-       refX="3"
-       refY="0"
-       orient="auto-start-reverse"
-       inkscape:stockid="Rounded arrow"
-       markerWidth="0.75"
-       markerHeight="0.75"
-       viewBox="0 0 1 1"
-       inkscape:isstock="true"
-       inkscape:collect="always"
-       preserveAspectRatio="xMidYMid">
-      <path
-         transform="scale(0.7)"
-         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
-         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
-         id="path8-7-2-2-4-8" />
     </marker>
     <marker
        style="overflow:visible"
@@ -358,25 +339,6 @@
     </marker>
     <marker
        style="overflow:visible"
-       id="RoundedArrow-1-0"
-       refX="3"
-       refY="0"
-       orient="auto-start-reverse"
-       inkscape:stockid="Rounded arrow"
-       markerWidth="0.75"
-       markerHeight="0.75"
-       viewBox="0 0 1 1"
-       inkscape:isstock="true"
-       inkscape:collect="always"
-       preserveAspectRatio="xMidYMid">
-      <path
-         transform="scale(0.7)"
-         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
-         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
-         id="path8-7-6" />
-    </marker>
-    <marker
-       style="overflow:visible"
        id="RoundedArrow-1-5"
        refX="3"
        refY="0"
@@ -470,6 +432,63 @@
          style="fill:context-stroke;fill-rule:evenodd;stroke:none"
          id="path8-7-2-2-4-8-3-0-5" />
     </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-1-3-4-9-2-76-8-7"
+       refX="3"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="0.75"
+       markerHeight="0.75"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-7-2-2-4-8-2-9-8" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-1-3-4-9-2-76-8-7-5"
+       refX="3"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="0.75"
+       markerHeight="0.75"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-7-2-2-4-8-2-9-8-3" />
+    </marker>
+    <marker
+       style="overflow:visible"
+       id="RoundedArrow-1-3-4-9-2-76-8-7-5-0"
+       refX="3"
+       refY="0"
+       orient="auto-start-reverse"
+       inkscape:stockid="Rounded arrow"
+       markerWidth="0.75"
+       markerHeight="0.75"
+       viewBox="0 0 1 1"
+       inkscape:isstock="true"
+       inkscape:collect="always"
+       preserveAspectRatio="xMidYMid">
+      <path
+         transform="scale(0.7)"
+         d="m -0.21114562,-4.1055728 6.42229122,3.21114561 a 1,1 90 0 1 0,1.78885438 L -0.21114562,4.1055728 A 1.236068,1.236068 31.717474 0 1 -2,3 v -6 a 1.236068,1.236068 148.28253 0 1 1.78885438,-1.1055728 z"
+         style="fill:context-stroke;fill-rule:evenodd;stroke:none"
+         id="path8-7-2-2-4-8-2-9-8-3-1" />
+    </marker>
   </defs>
   <g
      inkscape:label="Layer 1"
@@ -480,9 +499,9 @@
        style="fill:#d3d7cf;stroke-width:6.20863"
        id="rect5-6-0-9"
        width="125"
-       height="205"
+       height="190"
        x="5"
-       y="-210"
+       y="-195"
        transform="scale(1,-1)" />
     <rect
        style="fill:#eeeeec;stroke-width:2.319"
@@ -518,25 +537,25 @@
            sodipodi:role="line"
            id="tspan10-7-7-1"
            x="-72.428856"
-           y="52.382298">TokenSum</tspan></text>
+           y="52.382298">count</tspan></text>
     </g>
     <text
        xml:space="preserve"
        style="font-size:5.64444px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:3, 3;stroke-dashoffset:0"
-       x="-52.645836"
+       x="-51.587502"
        y="18.386435"
        id="text15-9-0-7"
        transform="rotate(-90)"><tspan
          sodipodi:role="line"
          style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
-         x="-52.645836"
+         x="-51.587502"
          y="18.386435"
-         id="tspan6">good token</tspan><tspan
+         id="tspan1">good live</tspan><tspan
          sodipodi:role="line"
          style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
-         x="-52.645836"
+         x="-51.587502"
          y="25.441984"
-         id="tspan2">counter</tspan></text>
+         id="tspan2">token count</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:5.64444px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:3, 3;stroke-dashoffset:0"
@@ -720,9 +739,9 @@
        style="fill:#eeeeec;stroke-width:3.72013"
        id="rect5-6-0"
        width="115"
-       height="79.999992"
+       height="65.000023"
        x="10"
-       y="-185"
+       y="-170"
        transform="scale(1,-1)" />
     <rect
        style="fill:#eeeeec;stroke-width:1.11401"
@@ -730,29 +749,29 @@
        width="55"
        height="14.999997"
        x="10.000004"
-       y="190" />
+       y="174.12498" />
     <rect
        style="fill:#eeeeec;stroke-width:1.11401"
        id="rect5-6-0-0-5-7-0"
        width="55.000004"
        height="14.999997"
        x="70"
-       y="190" />
+       y="174.12498" />
     <text
        xml:space="preserve"
        style="font-size:5.64444px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:3, 3;stroke-dashoffset:0"
        x="21.071629"
-       y="195.43156"
+       y="179.55655"
        id="text15-9-0-7-0-4"><tspan
          sodipodi:role="line"
          style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
          x="21.071629"
-         y="195.43156"
+         y="179.55655"
          id="tspan10">token</tspan><tspan
          sodipodi:role="line"
          style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
          x="21.071629"
-         y="202.48712"
+         y="186.61211"
          id="tspan5">output</tspan></text>
     <text
        xml:space="preserve"
@@ -774,12 +793,12 @@
        xml:space="preserve"
        style="font-size:5.64444px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:3, 3;stroke-dashoffset:0"
        x="114.70834"
-       y="199.48712"
+       y="183.61211"
        id="text15-9-0-7-0-4-7"><tspan
          sodipodi:role="line"
          style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
          x="114.70834"
-         y="199.48712"
+         y="183.61211"
          id="tspan10-1">clocks</tspan></text>
     <g
        id="g17-4-9-3"
@@ -865,28 +884,6 @@
            x="72.233521"
            y="52.873055">duration</tspan></text>
     </g>
-    <g
-       id="g9"
-       transform="translate(-94.627698,-27.751378)">
-      <rect
-         style="fill:#888a85;stroke-width:0.461798"
-         id="rect1-26-3-8-5-2"
-         width="9.8541603"
-         height="9.937501"
-         x="204.6277"
-         y="-207.68887"
-         transform="scale(1,-1)" />
-      <text
-         xml:space="preserve"
-         style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#ffffff;stroke:none;stroke-width:0.499999;stroke-dasharray:none"
-         x="209.48846"
-         y="204.51794"
-         id="text10-9-1-9-2-4-9"><tspan
-           sodipodi:role="line"
-           id="tspan24-2"
-           x="209.48846"
-           y="204.51794">F?</tspan></text>
-    </g>
     <path
        style="fill:#888a85;stroke:#888a85;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-6-5)"
        d="m 110,152.5 h -7.66459"
@@ -931,18 +928,18 @@
          xml:space="preserve"
          style="font-size:4.93889px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#ffffff;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
          x="146.84494"
-         y="155.31575"
+         y="158.89476"
          id="text22-4-7"><tspan
            sodipodi:role="line"
            style="font-size:4.93889px;fill:#ffffff;stroke:none;stroke-width:1"
            x="146.84494"
-           y="155.31575"
-           id="tspan23-9" /><tspan
+           y="158.89476"
+           id="tspan25">IsOn</tspan><tspan
            sodipodi:role="line"
            style="font-size:4.93889px;fill:#ffffff;stroke:none;stroke-width:1"
            x="146.84494"
-           y="161.48936"
-           id="tspan25">IsOn</tspan></text>
+           y="165.06837"
+           id="tspan8">FF</tspan></text>
     </g>
     <g
        id="g1"
@@ -1009,90 +1006,79 @@
          xml:space="preserve"
          style="font-size:4.93889px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#ffffff;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
          x="100"
-         y="140.4211"
+         y="139.89194"
          id="text22-4"><tspan
            sodipodi:role="line"
            style="font-size:4.93889px;fill:#ffffff;stroke:none;stroke-width:1"
            x="100"
-           y="140.4211"
-           id="tspan23">TimerOn</tspan></text>
+           y="139.89194"
+           id="tspan23">Count-</tspan><tspan
+           sodipodi:role="line"
+           style="font-size:4.93889px;fill:#ffffff;stroke:none;stroke-width:1"
+           x="100"
+           y="146.06555"
+           id="tspan9">down</tspan></text>
       <path
          style="fill:none;stroke:#ffffff;stroke-width:0.401704;stroke-dasharray:none;stroke-dashoffset:0"
          d="M 109.60215,150.1018 107.5,146.26368 105.39786,150.1018"
          id="path26" />
+      <path
+         style="fill:none;stroke:#ffffff;stroke-width:0.401704;stroke-dasharray:none;stroke-dashoffset:0"
+         d="m 54.602148,149.89647 -2.10215,-3.83812 -2.10214,3.83812"
+         id="path26-0" />
     </g>
     <text
        xml:space="preserve"
        style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:#cc0000;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-       x="89.002609"
-       y="200.58334"
+       x="79.520432"
+       y="184.70833"
        id="text27"><tspan
          sodipodi:role="line"
          id="tspan27"
          style="fill:#75507b;stroke:none;stroke-width:1"
-         x="89.002609"
-         y="200.58334">clk<tspan
+         x="79.520432"
+         y="184.70833">clk<tspan
    style="font-size:65%;baseline-shift:sub;fill:#75507b"
-   id="tspan28">plt</tspan></tspan></text>
+   id="tspan28" /></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
        x="40"
-       y="200.58334"
+       y="184.70833"
        id="text34-3"><tspan
          sodipodi:role="line"
          id="tspan34-58"
          style="fill:#75507b;stroke-width:1"
          x="40"
-         y="200.58334">t<tspan
+         y="184.70833">t<tspan
    style="font-size:65%;baseline-shift:sub;fill:#75507b"
    id="tspan35-1">start</tspan></tspan></text>
     <text
        xml:space="preserve"
        style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
        x="55"
-       y="200.58334"
+       y="184.70833"
        id="text34-3-4"><tspan
          sodipodi:role="line"
          id="tspan34-58-9"
          style="fill:#75507b;stroke-width:1"
          x="55"
-         y="200.58334">t<tspan
+         y="184.70833">t<tspan
    style="font-size:65%;baseline-shift:sub;fill:#75507b"
    id="tspan35-1-5">stop</tspan></tspan></text>
-    <path
-       id="rect9"
-       style="fill:#f57900;stroke:none"
-       d="m 90.145834,169.99999 h 9.70834 l 2.645826,10 H 87.500004 Z"
-       sodipodi:nodetypes="ccccc" />
-    <path
-       style="fill:#888a85;stroke:#888a85;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-6-5)"
-       d="m 110,175 h -6.16874"
-       id="path9"
-       sodipodi:nodetypes="cc" />
-    <path
-       style="fill:none;stroke:#f57900;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2)"
-       d="m 95.000002,170.582 v -8.58066"
-       id="path10"
-       sodipodi:nodetypes="cc" />
     <text
        xml:space="preserve"
        style="font-size:4.9389px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#75507b;stroke:#cc0000;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-       x="100.82249"
-       y="200.58334"
+       x="95.323006"
+       y="184.70833"
        id="text12"><tspan
          sodipodi:role="line"
          id="tspan12"
          style="fill:#75507b;stroke:none;stroke-width:1"
-         x="100.82249"
-         y="200.58334">clk<tspan
+         x="95.323006"
+         y="184.70833">clk<tspan
    style="font-size:65%;baseline-shift:sub;fill:#75507b"
-   id="tspan11">spk</tspan></tspan></text>
-    <path
-       style="fill:none;stroke:#75507b;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8)"
-       d="m 89.675382,195.22392 c 1.732052,-3 2.32462,-5.29167 2.32462,-12.93226"
-       id="path12"
-       sodipodi:nodetypes="cc" />
+   id="tspan11">slow</tspan></tspan></text>
     <path
        style="fill:none;stroke:#73d216;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-6-5-7-8-0-8)"
        d="M 47.503348,95.000001 C 47.503348,105 9.9999996,100.29166 20,115.29167"
@@ -1132,25 +1118,25 @@
            sodipodi:role="line"
            id="tspan10-7-7-1-9"
            x="-72.428856"
-           y="52.382298">TokenSum</tspan></text>
+           y="52.382298">count</tspan></text>
     </g>
     <text
        xml:space="preserve"
        style="font-size:5.64444px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:3, 3;stroke-dashoffset:0"
-       x="-52.972488"
+       x="-51.914154"
        y="78.386436"
        id="text15-9-0-7-7"
        transform="rotate(-90)"><tspan
          sodipodi:role="line"
          style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
-         x="-52.972488"
+         x="-51.914154"
          y="78.386436"
-         id="tspan7">bad token</tspan><tspan
+         id="tspan7">bad live </tspan><tspan
          sodipodi:role="line"
          style="font-size:5.64444px;fill:#888a85;stroke:none;stroke-width:1"
-         x="-52.972488"
+         x="-51.914154"
          y="85.441986"
-         id="tspan2-9">counter</tspan></text>
+         id="tspan2-9">token count</tspan></text>
     <text
        xml:space="preserve"
        style="font-size:5.64444px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:none;stroke:#000000;stroke-width:1;stroke-dasharray:3, 3;stroke-dashoffset:0"
@@ -1177,7 +1163,7 @@
          style="font-size:8.46667px;fill:#ffffff;stroke:none;stroke-width:1"
          x="67.431099"
          y="12.744573"
-         id="tspan4-5-3">Event Processor</tspan></text>
+         id="tspan4-5-3">TickTockToken Processor</tspan></text>
     <g
        id="g17-8-9"
        transform="translate(55.000013,-89.99998)">
@@ -1365,7 +1351,7 @@
        transform="matrix(0,1,1,0,-95.201359,8.3837676)">
       <path
          style="fill:none;stroke:#f57900;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-7-7-9)"
-         d="m 151.90789,142.70136 c 10,0 10,12.5 10,19.85416 0,7.64584 0,12.64584 -8.41248,12.64584"
+         d="m 151.90789,142.70136 c 10,0 4.70834,12.5 4.70834,19.85416 0,7.64584 5.29166,12.64584 -3.12082,12.64584"
          id="path14-9-3"
          sodipodi:nodetypes="csc" />
     </g>
@@ -1377,33 +1363,6 @@
          d="m 141.85877,132.70136 c -10,-0.27598 -3.02917,18.94167 -15.52917,6.44167"
          id="path14-9-6-7"
          sodipodi:nodetypes="cc" />
-    </g>
-    <path
-       style="fill:none;stroke:#73d216;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-0)"
-       d="m 47.503348,95.000001 c 0,4.999998 -8.032518,5.291659 2.496652,19.762469"
-       id="path34-0"
-       sodipodi:nodetypes="cc" />
-    <g
-       id="g18-6-6-4"
-       transform="matrix(-0.5,0,0,0.5,76.25,44.056037)">
-      <circle
-         style="fill:#73d216;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         id="path17-8-6-7-0"
-         cx="52.503445"
-         cy="138.81601"
-         r="7.5" />
-      <text
-         xml:space="preserve"
-         style="font-size:14.1111px;font-family:Arial;-inkscape-font-specification:Arial;text-align:center;text-anchor:middle;fill:#ffffff;stroke:none;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0"
-         x="-52.5"
-         y="143.82518"
-         id="text17-5-4-2-0"
-         transform="scale(-1,1)"><tspan
-           sodipodi:role="line"
-           id="tspan17-3-4-0-6"
-           style="font-size:14.1111px;fill:#ffffff;stroke-width:1"
-           x="-52.5"
-           y="143.82518">¬</tspan></text>
     </g>
     <g
        id="g18"
@@ -1428,26 +1387,47 @@
     </g>
     <g
        id="g20"
-       transform="matrix(0,1,1,0,-174.90969,40.592102)">
+       transform="matrix(0,1,1,0,-174.90969,40.592102)"
+       style="fill:none;stroke:#75507b">
       <path
          style="fill:none;stroke:#75507b;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-7-8)"
-         d="m 89.407895,202.40969 c 9.950878,0 9.659208,-2.20832 14.659205,-2.20832 25.00001,0 30.58334,15 50.58334,15"
+         d="m 89.407895,202.40969 c 9.950878,0 9.659208,-2.20832 14.659205,-2.20832 25.00001,0 14.70834,15 34.70834,15"
          id="path20"
          sodipodi:nodetypes="csc" />
     </g>
     <g
        id="g21"
-       transform="matrix(0,1,1,0,-120.20137,35.592098)">
+       transform="matrix(0,1,1,0,-120.20137,35.592098)"
+       style="fill:none;stroke:#75507b">
       <path
          style="fill:none;stroke:#75507b;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-7)"
-         d="m 94.407899,207.70137 c 10.000001,0 0,-20.14584 10.000001,-20.14584 h 30.29166 c 20,0 5.29167,-12.35416 25.29167,-12.35416"
+         d="m 94.407899,207.70137 c 10.000001,0 0,-20.14584 10.000001,-20.14584 h 25 c 10,0 0,-12.35416 14.70833,-12.35416"
          id="path21"
          sodipodi:nodetypes="cssc" />
     </g>
     <path
-       style="fill:none;stroke:#75507b;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8)"
-       d="m 100.32462,195.22392 c -1.73205,-3 -2.324618,-5.29167 -2.324618,-12.93226"
+       style="fill:none;stroke:#5c3566;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8)"
+       d="M 95.000001,178.4125 V 162.64585"
        id="path22"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ad7fa8;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8-7)"
+       d="m 80.042731,178.25308 -0.04273,-4.84061"
+       id="path22-5"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ad7fa8;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8-7-5)"
+       d="m 40.021365,167.15573 -0.04273,-4.84061"
+       id="path22-5-8"
+       sodipodi:nodetypes="cc" />
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:0.401704;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 99.660973,72.581351 -2.102138,-3.83812 -2.102134,3.83812"
+       id="path26-0-6" />
+    <path
+       style="fill:none;stroke:#ad7fa8;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8-7-5-0)"
+       d="m 97.580195,79.840611 -0.0427,-4.84061"
+       id="path22-5-8-0"
        sodipodi:nodetypes="cc" />
     <g
        id="g16"
@@ -1467,5 +1447,14 @@
          id="path20-0"
          sodipodi:nodetypes="csc" />
     </g>
+    <path
+       style="fill:none;stroke:#ffffff;stroke-width:0.401704;stroke-dasharray:none;stroke-dashoffset:0"
+       d="m 39.335968,72.581351 -2.102138,-3.83812 -2.102134,3.83812"
+       id="path9" />
+    <path
+       style="fill:none;stroke:#ad7fa8;stroke-width:1;stroke-dasharray:none;stroke-dashoffset:0;marker-end:url(#RoundedArrow-1-3-4-9-2-76-8-7-5-0)"
+       d="m 37.25519,79.840611 -0.0427,-4.84061"
+       id="path10"
+       sodipodi:nodetypes="cc" />
   </g>
 </svg>

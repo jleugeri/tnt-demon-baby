@@ -88,7 +88,6 @@ module tt_um_jleugeri_event_processor_core #(
     always_ff @(posedge clock_fast ) begin
         // if reset, reset all internal registers
         if (reset) begin
-            remaining_duration <= 0;
             // initialize the token counts to negative thresholds
             good_tokens <= -good_tokens_threshold;
             bad_tokens <= -bad_tokens_threshold;
@@ -139,7 +138,9 @@ module tt_um_jleugeri_event_processor_core #(
     end
 
     always_ff @(posedge clock_slow) begin
-        if (!reset) begin
+        if (reset) begin
+            remaining_duration <= 0;
+        end else begin
             if (isOn && startCountdown && !startedCountdown) begin
                 remaining_duration <= duration;
                 startedCountdown <= 1;
