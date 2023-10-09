@@ -15,8 +15,18 @@ module tt_um_jleugeri_ticktocktokens (
 
     // set up direction of bidirectional IOs
     assign uio_oe = 8'b00000000;
-    assign uo_out[7:2] = 6'b111111;
+    //assign uo_out[7:2] = 6'b111111;
     assign uio_out = 8'b11111111;
+
+    tt_um_jleugeri_ttt_respite #(8) respite (
+        .clk(clk),
+        .in(ui_in),
+        .nonempty(uo_out[2]),
+        .current_idx(uo_out[7:5]),
+        .current_val(uo_out[3]),
+        .go(ena),
+        .done(uo_out[4])
+    );
 
     // instantiate the event processor
     tt_um_jleugeri_ttt_processor_core #(
