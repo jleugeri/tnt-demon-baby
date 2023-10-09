@@ -4,21 +4,60 @@ from cocotb.triggers import RisingEdge, FallingEdge, Timer, ClockCycles
 
 
 @cocotb.test()
-async def test_demon_baby(dut):
+async def test_ticktocktokens(dut):
     dut._log.info("start")
-    clock = Clock(dut.clk, 10, units="us")
+    clock = Clock(dut.clk, 20, units="ns")
     cocotb.start_soon(clock.start())
 
+    # set good and bad token threshold to 2 and duration to maximum (15)
+    dut.uio_in.value = 0b00101111
+    
     dut._log.info("reset")
     dut.rst_n.value = 0
-    await ClockCycles(dut.clk, 10)
+    await ClockCycles(dut.clk, 3)
+
+    assert dut.main.core.reset == 1
+
     dut.rst_n.value = 1
 
-    # dut._log.info("check all segments")
-    # for i in range(10):
-    #     dut._log.info("check segment {}".format(i))
-    #     await ClockCycles(dut.clk, 1000)
-    #     assert int(dut.segments.value) == segments[i]
+    await ClockCycles(dut.clk, 3)
 
-    #     # all bidirectionals are set to output
-    #     assert dut.uio_oe == 0xFF
+    # trigger the first event by injecting one good token every step for four cycles
+    dut.ui_in.value = 0b00000001
+    await ClockCycles(dut.clk, 4)
+    dut.ui_in.value = 0b00000000
+
+    await ClockCycles(dut.clk, 2)
+    
+    # start subtracting tokens
+    dut.ui_in.value = 0b00001111
+    await ClockCycles(dut.clk, 4)
+
+    # add and remove some more token with no effect
+    dut.ui_in.value = 0b00000001
+    await ClockCycles(dut.clk, 2)
+    dut.ui_in.value = 0b00001111
+    await ClockCycles(dut.clk, 2)
+    dut.ui_in.value = 0b00000000
+
+    await ClockCycles(dut.clk, 10)
+
+    # trigger the second event by injecting one good token every step for four cycles
+    dut.ui_in.value = 0b00000001
+    await ClockCycles(dut.clk, 4)
+
+    # now start injecting bad tokens to stop event
+    dut.ui_in.value = 0b00010000
+    await ClockCycles(dut.clk, 4)
+    # now start removing bad tokens to potentially re-trigger event
+    dut.ui_in.value = 0b11110000
+    await ClockCycles(dut.clk, 4)
+    
+    # start subtracting good tokens again
+    dut.ui_in.value = 0b00001111
+    await ClockCycles(dut.clk, 4)
+    dut.ui_in.value = 0b00000000
+
+    await ClockCycles(dut.clk, 15)
+
+    dut._log.info("Done!")

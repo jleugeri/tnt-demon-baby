@@ -9,8 +9,10 @@ TOPLEVEL_LANG ?= verilog
 ifneq ($(GATES),yes)
 
 # this is the only part you should need to modify:
+WAVES 			 = 1
 COMPILE_ARGS	+= --timing
-VERILOG_SOURCES += $(PWD)/tb.v $(PWD)/tt_um_jleugeri_demon_baby.v
+EXTRA_ARGS 		+= --trace --trace-structs
+VERILOG_SOURCES += $(PWD)/tb.v $(PWD)/tt_um_jleugeri_ticktocktokens.v
 
 else
 

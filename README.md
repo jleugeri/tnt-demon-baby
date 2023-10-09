@@ -1,20 +1,42 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg)
 
-# QUBO-DEMON
-A *De*ndrite *Mo*del *N*euron for solving *Q*uadratic *U*nconstrained *B*inary *O*ptimization problems, and similar shennanigans.
+# TickTockTokens
+This project is an implementation of a *processor* that uses *Tick Tock Tokens* (TTT) for event-based computation.
+TTTs have an expiry date and come in two flavors, *good* and *bad*, which can either trigger or interrupt/prevent a processor's generation of tokens.
+If you put enough of these processors together, they can perform interesting computation.
 
-## What it is
-You shall see.
+The TickTockToken concept is a modification of Time-Petri-Nets that I came up with when trying to boil down event-based computing to its "atomic building blocks". I am using this concept in the context of simplified models of dendritic computation with spiking neurons, but it might be interesting for different applications, as well.
+Your milage may vary.
 
-## How it works
-You shall see, as well.
+## Uh ... wat?
+
+Each TTT is an abstract "token", which is created by a processor when certain conditions are met, and then expires after a fixed amount of time. See the picture below.
+
+![Logic implemented by a TickTockToken Processor.](event_processor.svg)
+
+The lifetime of each token is tracked by a timer within the issuing processor, which begins counting down once a token is generated. When the timer runs out (or the token is otherwise terminated), I say that token has *expired*.
+
+(Multiple) "entangled" copies of this token can be transmitted to (multiple) recipients, and each of these copies can be labeled as a *good* or a *bad* token. 
+How many copies to send to from where to where, and whether to label each as *good* or *bad* is determined by the network *connectome*, which can be represented by a multi-directed-graph. 
+Here, I'll treat the connectome as static for the entire simulation.
+
+Each processor maintains counts of all good and all bad non-expired tokens it has received, which I'll call the *good* and the *bad live token count*, respectively.
+The processor continuously monitors these two counts as new tokens come in or expire, and compares them against the respective *good* and *bad token threshold*.
+While the bad token threshold is exceeded, the processor cannot generate any new tokens, and any already issued token(s) are *terminated*, i.e. they expire immediately.
+If that is not the case and the good token threshold is exceeded, the processor will issue a new token (if it has capacity to do so; here, I'll assume a capacity of just one live token per processor, but this might change in future iterations)
+
+When a new token is generated, this is communicated to all receiving processors by a *start* message; when the token ultimately expires (or is terminated), this is communicated by a second *stop* message.
+These messages could be either sent via hard-wired connections, or via a packet-switched network-on-chip.
 
 ## How to use it
-You shall see, at last.
+For simulation, run the enclosed scripts in the /simulations folder.
+For running the hardware, I will add scripts in the /experiments folder once the hardware is tested.
 
 ## Acknowledgements
-This is TinyNeuromorphicTapeout project conceived during the Telluride 2023 workshop area on 
-[open source neuromorphic tools](https://sites.google.com/view/telluride-2023/topic-areas/osn23-open-source-neuromorphic-hardware-software-and-wetware),
-based on the work by [Matt Venn](https://twitter.com/matthewvenn).
+The original idea for this concept emerged from joint work with [Pascal Nieters](https://scholar.google.com/citations?user=Bl2wxiQAAAAJ&hl=en) on a simple event-based models of neural computation.
 
-Thanks to [Jason Eshraghian](https://www.jasoneshraghian.com/) and [Peng Zhou](https://pengzhou.sites.ucsc.edu/)!
+This is a TinyNeuromorphicTapeout project that was directly motivated and financed by the Telluride 2023 workshop area on 
+[open source neuromorphic tools](https://sites.google.com/view/telluride-2023/topic-areas/osn23-open-source-neuromorphic-hardware-software-and-wetware).
+Thanks to [Jason Eshraghian](https://www.jasoneshraghian.com/) and [Peng Zhou](https://pengzhou.sites.ucsc.edu/) for organizing the workshop + tapeout!
+
+The TNT project in turn is based on the work by [Matt Venn](https://twitter.com/matthewvenn) on [TinyTapeout](), so I tip my hat to Matt as well for democratizing VLSI design!

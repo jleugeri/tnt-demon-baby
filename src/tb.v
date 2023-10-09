@@ -11,7 +11,7 @@ module tb ();
 
     // this part dumps the trace to a vcd file that can be viewed with GTKWave
     initial begin
-        $dumpfile ("tb.vcd");
+        //$dumpfile ("tb.vcd");
         $dumpvars (0, tb);
         #1;
     end
@@ -27,7 +27,7 @@ module tb ();
     wire ena;
 
     // instantiate the DUT with lower MAX_COUNT for a faster sim
-    tt_um_jleugeri_demon_baby #(.MAX_COUNT(1000)) tt_um_jleugeri_demon_baby (
+    tt_um_jleugeri_ticktocktokens main (
         `ifdef GL_TEST
             .vccd1( 1'b1),
             .vssd1( 1'b0),

@@ -1,0 +1,69 @@
+[*]
+[*] GTKWave Analyzer v3.3.115 (w)1999-2023 BSI
+[*] Sun Oct  8 01:49:00 2023
+[*]
+[dumpfile] "dump.vcd"
+[dumpfile_mtime] "Sat Oct  7 23:38:18 2023"
+[dumpfile_size] 5674
+[savefile] "wave_view.gtkw"
+[timestart] 0
+[size] 1807 652
+[pos] -154 47
+*-17.472139 1000 150000 469400 630000 730000 790000 1110000 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1 -1
+[markername] AStart 1
+[markername] BEnd 1
+[markername] CStart 2
+[markername] DInterrupt 2
+[markername] EStart 3
+[markername] FEnd 3
+[treeopen] tb.
+[treeopen] tb.main.
+[sst_width] 193
+[signals_width] 242
+[sst_expanded] 1
+[sst_vpaned_height] 189
+@28
+[color] 3
+tb.main.core.clock_fast
+@29
+[color] 3
+tb.main.core.reset
+@24
+[color] 5
+tb.main.core.duration[3:0]
+[color] 5
+tb.main.core.good_tokens_threshold[3:0]
+[color] 5
+tb.main.core.bad_tokens_threshold[3:0]
+@420
+[color] 4
+tb.main.core.new_good_tokens[3:0]
+[color] 4
+tb.main.core.good_tokens[3:0]
+[color] 1
+tb.main.core.new_bad_tokens[3:0]
+[color] 1
+tb.main.core.bad_tokens[3:0]
+@28
+[color] 2
+tb.main.core.setOn
+[color] 2
+tb.main.core.setOff
+[color] 2
+tb.main.core.isOn
+@24
+[color] 2
+tb.main.core.remaining_duration[3:0]
+@28
+[color] 2
+tb.main.core.startCountdown
+[color] 2
+tb.main.core.startedCountdown
+[color] 2
+tb.main.core.timerExpired
+[color] 7
+tb.main.core.token_start
+[color] 7
+tb.main.core.token_end
+[pattern_trace] 1
+[pattern_trace] 0
