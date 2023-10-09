@@ -1,6 +1,6 @@
 ![](../../workflows/gds/badge.svg) ![](../../workflows/docs/badge.svg) ![](../../workflows/test/badge.svg)
 
-# TickTockTokens
+# ⏰ TickTockTokens
 This project is an implementation of a *processor* that uses *Tick Tock Tokens* (TTT) for event-based computation.
 TTTs have an expiry date and come in two flavors, *good* and *bad*, which can either trigger or interrupt/prevent a processor's generation of tokens.
 If you put enough of these processors together, they can perform interesting computation.
@@ -36,10 +36,8 @@ For simulation, run the enclosed scripts in the /simulations folder.
 For running the hardware, I will add scripts in the /experiments folder once the hardware is tested.
 
 ## Acknowledgements
-The original idea for this concept emerged from joint work with [Pascal Nieters](https://scholar.google.com/citations?user=Bl2wxiQAAAAJ&hl=en) on a simple event-based models of neural computation.
+The original idea for this concept emerged from joint work with [Pascal Nieters](https://scholar.google.com/citations?user=Bl2wxiQAAAAJ&hl=en) on a simple [event-based model of neural computation](https://www.frontiersin.org/articles/10.3389/fcogn.2023.1044216/full) that could be interesting for [a neuromorphic hardware implementation](https://dl.acm.org/doi/10.1145/3381755.3381763) and somewhat resembles an [extension of Time Petri Nets](https://dl.acm.org/doi/10.1145/3517343.3517362).
 
-This is a TinyNeuromorphicTapeout project that was directly motivated and financed by the Telluride 2023 workshop area on 
-[open source neuromorphic tools](https://sites.google.com/view/telluride-2023/topic-areas/osn23-open-source-neuromorphic-hardware-software-and-wetware).
-Thanks to [Jason Eshraghian](https://www.jasoneshraghian.com/) and [Peng Zhou](https://pengzhou.sites.ucsc.edu/) for organizing the workshop + tapeout!
-
-The TNT project in turn is based on the work by [Matt Venn](https://twitter.com/matthewvenn) on [TinyTapeout](), so I tip my hat to Matt as well for democratizing VLSI design!
+I decided to implement this in an ASIC as part of TinyNeuromorphicTapeout (TNT) project following the Telluride 2023 workshop area on [open source neuromorphic tools](https://sites.google.com/view/telluride-2023/topic-areas/osn23-open-source-neuromorphic-hardware-software-and-wetware).
+Thanks to [Jason Eshraghian](https://www.jasoneshraghian.com/) and [Peng Zhou](https://pengzhou.sites.ucsc.edu/) for pushing and organizing the TNT project, and thanks to [ReJ](https://github.com/rejunity/) for helpful discussions!
+The TNT project in turn is based on [TinyTapeout](https://tinytapeout.com), so I tip my hat to [Matt Venn](https://twitter.com/matthewvenn) and the TinyTapeout community for their efforts to democratize VLSI design!
