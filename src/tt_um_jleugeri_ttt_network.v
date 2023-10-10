@@ -2,7 +2,7 @@
 
 
 module tt_um_jleugeri_ttt_mux #(
-    int NUM_PROCESSORS
+    parameter int NUM_PROCESSORS
 ) (
     // control I/Os
     output logic hot_out,
@@ -29,8 +29,8 @@ module tt_um_jleugeri_ttt_mux #(
 endmodule
 
 module tt_um_jleugeri_ttt_network #(
-    int NEW_TOKENS_BITS = 4,
-    int NUM_PROCESSORS = 10
+    parameter int NEW_TOKENS_BITS = 4,
+    parameter int NUM_PROCESSORS = 10
 ) (
     // event start/stop inputs
     input logic [1:0] tstartstop[NUM_PROCESSORS],

@@ -1,5 +1,5 @@
 module tt_um_jleugeri_ttt_respite #(
-    int SIZE
+    parameter int SIZE
 ) (
     input logic clk,
     input logic [SIZE-1:0] in,
