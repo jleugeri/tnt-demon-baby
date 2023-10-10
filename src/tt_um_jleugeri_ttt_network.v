@@ -12,7 +12,7 @@ module tt_um_jleugeri_ttt_mux #(
     // mux inputs
     input logic [2*NUM_PORCESSORS-1:0] t_startstop_in,
     // mux outputs
-    output logic [$log2(NUM_PROCESSORS)-1:0] idx_out,
+    output logic [$clog2(NUM_PROCESSORS)-1:0] idx_out,
     output logic t_start_out,
     output logic t_stop_out
 );
@@ -48,9 +48,9 @@ module tt_um_jleugeri_ttt_network #(
     logic mux_next;
 
     // internal address wires
-    logic [$log2(NUM_PROCESSORS)-1:0] idx_src;
-    logic [(3*$log2(NUM_PROCESSORS))-1:0] tgt_range;
-    logic [$log2(NUM_PROCESSORS)-1:0] idx_tgt;
+    logic [$clog2(NUM_PROCESSORS)-1:0] idx_src;
+    logic [(3*$clog2(NUM_PROCESSORS))-1:0] tgt_range;
+    logic [$clog2(NUM_PROCESSORS)-1:0] idx_tgt;
 
     // internal data wires
     logic src_tstart;
@@ -60,8 +60,8 @@ module tt_um_jleugeri_ttt_network #(
 
     // internal helper variables
     logic signed src_sign = src_tstart - src_tstop;
-    logic [$log2(NUM_PROCESSORS)-1:0] mux_counter;
-    logic [(2*$log2(NUM_PROCESSORS))-1:0] tgt_counter;
+    logic [$clog2(NUM_PROCESSORS)-1:0] mux_counter;
+    logic [(2*$clog2(NUM_PROCESSORS))-1:0] tgt_counter;
 
     // implement the multiplexer
 
