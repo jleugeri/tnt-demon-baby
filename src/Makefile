@@ -12,7 +12,8 @@ ifneq ($(GATES),yes)
 WAVES 			 = 1
 COMPILE_ARGS	+= --timing
 EXTRA_ARGS 		+= --trace --trace-structs
-VERILOG_SOURCES += $(PWD)/tb.v $(PWD)/tt_um_jleugeri_ttt_respite.v $(PWD)/tt_um_jleugeri_ttt_network.v $(PWD)/tt_um_jleugeri_ttt_processor_core.v $(PWD)/tt_um_jleugeri_ticktocktokens.v
+# $(PWD)/tt_um_jleugeri_ttt_network.v 
+VERILOG_SOURCES += $(PWD)/tb.v $(PWD)/tt_um_jleugeri_ttt_respite.v $(PWD)/tt_um_jleugeri_ttt_processor_core.v $(PWD)/tt_um_jleugeri_ticktocktokens.v
 
 else
 

@@ -10,7 +10,7 @@ module tt_um_jleugeri_ttt_mux #(
     input logic go_in,
     input logic next_in,
     // mux inputs
-    input logic [2*NUM_PORCESSORS-1:0] t_startstop_in,
+    input logic [2*NUM_PROCESSORS-1:0] t_startstop_in,
     // mux outputs
     output logic [$clog2(NUM_PROCESSORS)-1:0] idx_out,
     output logic t_start_out,
@@ -33,10 +33,10 @@ module tt_um_jleugeri_ttt_network #(
     parameter int NUM_PROCESSORS = 10
 ) (
     // event start/stop inputs
-    input logic [2*NUM_PORCESSORS-1:0] tstartstop,
+    input logic [2*NUM_PROCESSORS-1:0] tstartstop,
     // good/bad event count outputs
-    output logic [NUM_PORCESSORS*NEW_TOKENS_BITS-1:0] new_good_tokens,
-    output logic [NUM_PORCESSORS*NEW_TOKENS_BITS-1:0] new_bad_tokens,
+    output logic [NUM_PROCESSORS*NEW_TOKENS_BITS-1:0] new_good_tokens,
+    output logic [NUM_PROCESSORS*NEW_TOKENS_BITS-1:0] new_bad_tokens,
     // control signal
     output logic enable
 );

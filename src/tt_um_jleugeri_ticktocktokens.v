@@ -13,6 +13,8 @@ module tt_um_jleugeri_ticktocktokens (
 
     wire reset = !rst_n;
 
+    wire enable_processors;
+
     // set up direction of bidirectional IOs
     assign uio_oe = 8'b00000000;
     //assign uo_out[7:2] = 6'b111111;
@@ -27,7 +29,7 @@ module tt_um_jleugeri_ticktocktokens (
         .go(ena),
         .done(uo_out[4])
     );
-
+    
     // instantiate the event processor
     tt_um_jleugeri_ttt_processor_core #(
         .NEW_TOKENS_BITS(4),
