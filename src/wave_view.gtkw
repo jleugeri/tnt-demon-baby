@@ -64,6 +64,6 @@ tb.main.core.timerExpired
 [color] 7
 tb.main.core.token_start
 [color] 7
-tb.main.core.token_end
+tb.main.core.token_stop
 [pattern_trace] 1
 [pattern_trace] 0

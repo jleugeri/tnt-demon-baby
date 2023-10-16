@@ -16,6 +16,11 @@ module tb ();
         #1;
     end
 
+    // instantiate the sub-testbenches
+    tb_processor_core tb_processor_core();
+    tb_network tb_network();
+
+    /*
     // wire up the inputs and outputs
     wire [7:0] uo_out;
     wire [7:0] ui_in;
@@ -41,5 +46,6 @@ module tb ();
         .clk        (clk),      // clock
         .rst_n      (rst_n)     // not reset
         );
+    */
 
-endmodule
+endmodule : tb
