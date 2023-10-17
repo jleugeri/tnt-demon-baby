@@ -23,6 +23,15 @@ module tt_um_jleugeri_ticktocktokens (
     // get positive reset
     wire reset = !rst_n;
 
+    logic clock_fast;
+    logic clock_slow;
+    logic hold;
+    logic [TOKENS_BITS-1:0] tokens_in;
+    logic [$clog2(NUM_PROCESSORS)-1:0] processor_id;
+    logic [PROG_HEADER-1:0] prog_header;
+    logic [PROG_BITS-1:0] prog_data;
+    logic [1:0] token_startstop;
+
     // set up direction of bidirectional IOs
     assign uio_oe = 8'b00000000;
     assign uo_out[7:6] = 2'b11;
