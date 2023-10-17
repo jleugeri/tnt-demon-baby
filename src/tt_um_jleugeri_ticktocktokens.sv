@@ -32,6 +32,9 @@ module tt_um_jleugeri_ticktocktokens (
     logic [PROG_BITS-1:0] prog_data;
     logic [1:0] token_startstop;
 
+    logic done;
+    tt_um_jleugeri_ttt::stage_t stage;
+
     // set up direction of bidirectional IOs
     assign uio_oe = 8'b00000000;
     assign uo_out[7:6] = 2'b11;
