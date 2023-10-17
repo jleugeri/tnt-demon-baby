@@ -13,7 +13,7 @@ WAVES 			 = 1
 COMPILE_ARGS	+= --timing
 EXTRA_ARGS 		+= --trace --trace-structs
 # $(PWD)/tt_um_jleugeri_ttt_network.v $(PWD)/tt_um_jleugeri_ttt_respite.v 
-VERILOG_SOURCES += $(PWD)/tt_um_jleugeri_ttt_processor_core.sv $(PWD)/tt_um_jleugeri_ttt_network.sv
+VERILOG_SOURCES += $(PWD)/tt_um_jleugeri_ttt_processor_core.sv $(PWD)/tt_um_jleugeri_ttt_network.sv $(PWD)/tt_um_jleugeri_ttt_main.sv $(PWD)/tt_um_jleugeri_ticktocktokens.sv
 VERILOG_SOURCES += $(PWD)/tb.sv $(PWD)/tb_processor_core.sv $(PWD)/tb_network.sv
 
 else
@@ -29,7 +29,8 @@ VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitiv
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 
 # this gets copied in by the GDS action workflow
-VERILOG_SOURCES += $(PWD)/tb.sv $(PWD)/gate_level_netlist.sv
+VERILOG_SOURCES += $(PWD)/tt_um_jleugeri_ttt_processor_core.sv $(PWD)/tt_um_jleugeri_ttt_network.sv $(PWD)/tt_um_jleugeri_ttt_main.sv $(PWD)/tt_um_jleugeri_ticktocktokens.sv
+VERILOG_SOURCES += $(PWD)/tb.sv $(PWD)/tb_processor_core.sv $(PWD)/tb_network.sv $(PWD)/gate_level_netlist.sv
 endif
 
 # TOPLEVEL is the name of the toplevel module in your Verilog or VHDL file

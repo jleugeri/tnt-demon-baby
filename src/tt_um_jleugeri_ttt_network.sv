@@ -1,7 +1,8 @@
 module tt_um_jleugeri_ttt_network #(
     parameter int NUM_PROCESSORS,
     parameter int NUM_CONNECTIONS = NUM_PROCESSORS*NUM_PROCESSORS,
-    parameter NEW_TOKENS_BITS = 4
+    parameter int NEW_TOKENS_BITS = 4,
+    parameter int PROG_WIDTH = 8
 ) (
     // control inputs / outputs
     input logic clk,
@@ -17,10 +18,14 @@ module tt_um_jleugeri_ttt_network #(
     // outputs to processor
     output logic [$clog2(NUM_PROCESSORS)-1:0] target_id,
     output logic signed [NEW_TOKENS_BITS-1:0] new_good_tokens,
-    output logic signed [NEW_TOKENS_BITS-1:0] new_bad_tokens
+    output logic signed [NEW_TOKENS_BITS-1:0] new_bad_tokens,
+    
+    // programming inputs
+    input logic [2:0] prog_header,
+    input logic [PROG_WIDTH-1:0] prog_data
 );
 
-    // inner loop counter
+    // target loop counter
     logic [$clog2(NUM_CONNECTIONS)-1:0] tgt_addr;
     logic [$clog2(NUM_CONNECTIONS)-1:0] end_addr;
 

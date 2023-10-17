@@ -22,8 +22,7 @@ module tb_processor_core ();
     logic [$clog2(NUM_PROCESSORS)-1:0] neuron_id;
     logic [NEW_TOKENS_BITS-1:0] new_good_tokens;
     logic [NEW_TOKENS_BITS-1:0] new_bad_tokens;
-    logic token_start;
-    logic token_stop;
+    logic [1:0] token_startstop;
     logic [2:0] prog_header;
     logic [PROG_WIDTH-1:0] prog_data;
 
@@ -39,14 +38,12 @@ module tb_processor_core ();
         .clock_fast(clock_fast),
         .clock_slow(clock_slow),
         .reset(reset),
-        .hold(hold),
         .neuron_id(neuron_id),
         // data inputs
         .new_good_tokens(new_good_tokens),
         .new_bad_tokens(new_bad_tokens),
         // data outputs
-        .token_start(token_start),
-        .token_stop(token_stop),
+        .token_startstop(token_startstop),
         // programming inputs
         .prog_header(prog_header),
         .prog_data(prog_data)

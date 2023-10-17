@@ -11,14 +11,12 @@ module tt_um_jleugeri_ttt_processor_core #(
     input logic clock_fast,
     input logic clock_slow,
     input logic reset,
-    input logic hold,
     input logic [$clog2(NUM_PROCESSORS+1)-1:0] neuron_id,
     // data inputs
     input logic signed [NEW_TOKENS_BITS-1:0] new_good_tokens,
     input logic signed [NEW_TOKENS_BITS-1:0] new_bad_tokens,
     // data outputs
-    output logic token_start,
-    output logic token_stop,
+    output logic [1:0] token_startstop,
     // programming inputs
     input logic [2:0] prog_header,
     input logic [PROG_WIDTH-1:0] prog_data
@@ -45,6 +43,8 @@ module tt_um_jleugeri_ttt_processor_core #(
             good_tokens[neuron_id] <= -good_tokens_threshold[neuron_id];
             isOn[neuron_id] <= 0;
             remaining_duration[neuron_id] <= 0;
+
+            prev_neuron_id <= NUM_PROCESSORS;
 
             // check if we should program the memory, and if so, which
             case (prog_header)
@@ -87,8 +87,7 @@ module tt_um_jleugeri_ttt_processor_core #(
                     remaining_duration[prev_neuron_id] <= duration[prev_neuron_id];
 
                     // signal the beginning of the token
-                    token_start <= 1;
-                    token_stop <= 0;
+                    token_startstop <= 2'b10;
                 end 
                 else if ( isOn[prev_neuron_id] && ((bad_tokens[prev_neuron_id] > 0) || remaining_duration[prev_neuron_id] == 0 )) begin
                     // turn off
@@ -98,8 +97,7 @@ module tt_um_jleugeri_ttt_processor_core #(
                     remaining_duration[prev_neuron_id] <= 0;
 
                     // signal the end of the token
-                    token_stop <= 1;
-                    token_start <= 0;
+                    token_startstop <= 2'b01;
                 end 
                 else begin
                     // if the countdown is running and the slow clock is currently on, decrement the countdown
@@ -108,8 +106,7 @@ module tt_um_jleugeri_ttt_processor_core #(
                     end
 
                     // reset the outputs
-                    token_start <= 0;
-                    token_stop <= 0;
+                    token_startstop <= 2'b00;
                 end
             end
         end

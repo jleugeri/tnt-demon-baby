@@ -11,36 +11,105 @@ package tt_um_jleugeri_ttt;
     If the externally controlled hold signal is asserted, the processor will not move to the next stage until the hold signal is deasserted.
     When reset is high, the processor will immediately return to stage 0b00, and possibly (partially) reprogram.
     */
-    typedef enum stage_t { RESET, INPUT, RECURRENT, UPDATE, OUTPUT } name;
-
-
+    typedef enum logic [2:0] { RESET, INPUT, RECURRENT, UPDATE, OUTPUT } stage_t;
 endpackage : tt_um_jleugeri_ttt
 
 module tt_um_jleugeri_ttt_main #(
-    parameter int DATA_IN_BITS = 8
-    parameter int DATA_OUT_BITS = 8
+    parameter int NUM_PROCESSORS = 10,
+    parameter int NUM_CONNECTIONS = 50,
+    parameter int NEW_TOKENS_BITS = 4,
+    parameter int TOKENS_BITS = 8,
+    parameter int DATA_BITS = 8,
+    parameter int PROG_HEADER = 8,
+    parameter int PROG_BITS = 8,
+    parameter int DURATION_BITS = 8
 ) (
     // control flow logic
     input  logic reset,
     input  logic clock_fast,
     input  logic clock_slow,
-    input  logic hold_i,
-    input  logic hold_o,
+    input  logic hold,
     output logic done,
     output stage_t stage,
     // data I/O logic
-    input  logic [DATA_IN_BITS-1:0] data_in,
-    output logic [DATA_OUT_BITS-1:0] data_out,
+    input  logic [DATA_BITS-1:0] tokens_in,
+    output logic [$clog2(NUM_PROCESSORS)-1:0] processor_id,
+    output logic [1:0] token_startstop,
+    // programming logic
+    input logic [PROG_HEADER-1:0] prog_header,
+    input logic [PROG_BITS-1:0] prog_data
 );
+
+    // internal control wires
+    logic network_reset;
+    logic network_valid_in;
+    logic network_valid_out;
+
+    logic processor_reset;
+
     // internal address wires
-    wire [DURATION_BITS-1:0] idx_src;
-    wire [DURATION_BITS-1:0] idx_tgt;
+    wire [DURATION_BITS-1:0] source_id;
+    wire [DURATION_BITS-1:0] target_id;
 
     // internal data wires
     wire src_tstart;
     wire src_tstop;
     wire signed [NEW_TOKENS_BITS-1:0] tgt_new_good_tokens;
     wire signed [NEW_TOKENS_BITS-1:0] tgt_new_bad_tokens;
+    wire signed [NEW_TOKENS_BITS-1:0] new_good_tokens;
+    wire signed [NEW_TOKENS_BITS-1:0] new_bad_tokens;
+
+
+    // instantiate the connections
+    tt_um_jleugeri_ttt_network #(
+        .NUM_PROCESSORS(NUM_PROCESSORS),
+        .NUM_CONNECTIONS(NUM_CONNECTIONS),
+        .NEW_TOKENS_BITS(NEW_TOKENS_BITS)
+    ) net (
+        // control inputs / outputs
+        .clk(clock_fast),
+        .reset(network_reset),
+        .valid_in(network_valid_in),
+        .source_id(source_id),
+        .done(network_done),
+        .valid_out(network_valid_out),
+
+        // inputs from processor
+        .token_startstop(token_startstop),
+        
+        // outputs to processor
+        .target_id(target_id),
+        .new_good_tokens(tgt_new_good_tokens),
+        .new_bad_tokens(tgt_new_bad_tokens),
+
+        // programming inputs
+        .prog_header(prog_header),
+        .prog_data(prog_data)
+    );
+
+
+    // instantiate just the processor core by itself
+    tt_um_jleugeri_ttt_processor_core #(
+        .NEW_TOKENS_BITS(NEW_TOKENS_BITS),
+        .TOKENS_BITS(TOKENS_BITS),
+        .DURATION_BITS(DURATION_BITS),
+        .NUM_PROCESSORS(NUM_PROCESSORS),
+        .PROG_WIDTH(PROG_WIDTH)
+    ) proc (
+        // control inputs
+        .clock_fast(clock_fast),
+        .clock_slow(clock_slow),
+        .reset(processor_reset),
+        .neuron_id(source_id),
+        // data inputs
+        .new_good_tokens(new_good_tokens),
+        .new_bad_tokens(new_bad_tokens),
+        // data outputs
+        .token_startstop(token_startstop),
+        // programming inputs
+        .prog_header(prog_header),
+        .prog_data(prog_data)
+    );
 
 /*
 STUFF from old mux object:

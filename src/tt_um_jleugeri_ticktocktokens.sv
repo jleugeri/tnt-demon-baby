@@ -11,34 +11,58 @@ module tt_um_jleugeri_ticktocktokens (
     input  wire       rst_n     // reset_n - low to reset
 );
 
-    wire reset = !rst_n;
+    localparam int NUM_PROCESSORS = 10;
+    localparam int NUM_CONNECTIONS = 50;
+    localparam int NEW_TOKENS_BITS = 4;
+    localparam int TOKENS_BITS = 8;
+    localparam int DATA_BITS = 8;
+    localparam int PROG_HEADER = 4;
+    localparam int PROG_BITS = 8;
+    localparam int DURATION_BITS = 8;
 
-    wire enable_processors;
+    // get positive reset
+    wire reset = !rst_n;
 
     // set up direction of bidirectional IOs
     assign uio_oe = 8'b00000000;
     assign uo_out[7:6] = 2'b11;
     assign uio_out = 8'b11111111;
 
-
-
+    assign clock_fast = clk;
+    assign clock_slow = 1;
+    assign hold = 1;
+    assign tokens_in = 8'b00000000;
+    assign processor_id = 4'b0000;
     
-    // // instantiate the event processor
-    // tt_um_jleugeri_ttt_processor_core #(
-    //     .NEW_TOKENS_BITS(4),
-    //     .TOKENS_BITS(4),
-    //     .DURATION_BITS(4)
-    // ) core (
-    //     .reset(reset),
-    //     .clock_fast(clk),
-    //     .clock_slow(clk),
-    //     .new_good_tokens(ui_in[3:0]),
-    //     .new_bad_tokens(ui_in[7:4]),
-    //     .token_start(uo_out[0]),
-    //     .token_stop(uo_out[1]),
-    //     .good_tokens_threshold(uio_in[7:4]),
-    //     .bad_tokens_threshold(uio_in[7:4]),
-    //     .duration(uio_in[3:0])
-    // );
+    assign uo_out[1:0] = token_startstop;
+    assign prog_header = uio_in[7:4];
+    assign prog_data = ui_in;
+
+    // instantiate the design
+    tt_um_jleugeri_ticktocktokens_main #(
+        .NUM_PROCESSORS(NUM_PROCESSORS),
+        .NUM_CONNECTIONS(NUM_CONNECTIONS),
+        .NEW_TOKENS_BITS(NEW_TOKENS_BITS),
+        .TOKENS_BITS(TOKENS_BITS),
+        .DATA_BITS(DATA_BITS),
+        .PROG_HEADER(PROG_HEADER),
+        .PROG_BITS(PROG_BITS),
+        .DURATION_BITS(DURATION_BITS)
+    ) main (
+        // control flow logic
+        .reset(reset),
+        .clock_fast(clock_fast),
+        .clock_slow(clock_slow),
+        .hold(hold),
+        .done(done),
+        .stage(stage),
+        // data I/O logic
+        .tokens_in(tokens_in),
+        .processor_id(processor_id),
+        .token_startstop(token_startstop),
+        // programming logic
+        .prog_header(prog_header),
+        .prog_data(prog_data)
+    );
 
 endmodule : tt_um_jleugeri_ticktocktokens

@@ -3,6 +3,7 @@ module tb_network();
     localparam NUM_PROCESSORS = 10;
     localparam NUM_CONNECTIONS = 50;
     localparam NEW_TOKENS_BITS = 4;
+    localparam PROG_WIDTH = 8;
 
     // control inputs / outputs
     logic clk;
@@ -19,6 +20,10 @@ module tb_network();
     logic [$clog2(NUM_PROCESSORS)-1:0] target_id;
     logic signed [NEW_TOKENS_BITS-1:0] new_good_tokens;
     logic signed [NEW_TOKENS_BITS-1:0] new_bad_tokens;
+
+    // programming
+    logic [2:0] prog_header;
+    logic [PROG_WIDTH-1:0] prog_data;
 
     // instantiate the connections
     tt_um_jleugeri_ttt_network #(
@@ -40,7 +45,11 @@ module tb_network();
         // outputs to processor
         .target_id(target_id),
         .new_good_tokens(new_good_tokens),
-        .new_bad_tokens(new_bad_tokens)
+        .new_bad_tokens(new_bad_tokens),
+
+        // programming inputs
+        .prog_header(prog_header),
+        .prog_data(prog_data)
     );
 
 endmodule: tb_network
