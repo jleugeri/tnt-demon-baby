@@ -23,7 +23,7 @@ module tb_processor_core ();
     logic [NEW_TOKENS_BITS-1:0] new_good_tokens;
     logic [NEW_TOKENS_BITS-1:0] new_bad_tokens;
     logic [1:0] token_startstop;
-    logic [2:0] prog_header;
+    logic [2:0] instruction;
     logic [PROG_WIDTH-1:0] prog_data;
 
     // instantiate just the processor core by itself
@@ -45,7 +45,7 @@ module tb_processor_core ();
         // data outputs
         .token_startstop(token_startstop),
         // programming inputs
-        .prog_header(prog_header),
+        .instruction(instruction),
         .prog_data(prog_data)
     );
 

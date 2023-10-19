@@ -7,13 +7,9 @@ module tt_um_jleugeri_ttt_network #(
     // control inputs / outputs
     input logic clk,
     input logic reset,
-    input logic valid_in,
     input logic [$clog2(NUM_PROCESSORS)-1:0] source_id,
+    input logic [$clog2(NUM_CONNECTIONS)-1:0] connection_id,
     output logic done,
-    output logic valid_out,
-
-    // inputs from processor
-    input logic [1:0] token_startstop,
     
     // outputs to processor
     output logic [$clog2(NUM_PROCESSORS)-1:0] target_id,
@@ -21,7 +17,7 @@ module tt_um_jleugeri_ttt_network #(
     output logic signed [NEW_TOKENS_BITS-1:0] new_bad_tokens,
     
     // programming inputs
-    input logic [2:0] prog_header,
+    input logic [2:0] instruction,
     input logic [PROG_WIDTH-1:0] prog_data
 );
 
@@ -33,41 +29,72 @@ module tt_um_jleugeri_ttt_network #(
     // the start indices of theses lists are stored in tgt_addr_first
     logic [$clog2(NUM_CONNECTIONS)-1:0] tgt_indptr[NUM_PROCESSORS:0];
     logic [$clog2(NUM_PROCESSORS)-1:0] tgt_indices[NUM_CONNECTIONS-1:0];
-    logic [NEW_TOKENS_BITS-1:0] tgt_data_good[NUM_CONNECTIONS-1:0];
-    logic [NEW_TOKENS_BITS-1:0] tgt_data_bad[NUM_CONNECTIONS-1:0];
+    logic [NEW_TOKENS_BITS-1:0] tgt_new_good_tokens[NUM_CONNECTIONS-1:0];
+    logic [NEW_TOKENS_BITS-1:0] tgt_new_bad_tokens[NUM_CONNECTIONS-1:0];
 
-    logic cycle_complete;
+    // memory address counters
+    //logic [$clog2(NUM_PROCESSORS)]
+
+
+    logic looping;
 
     always_ff @( posedge clk ) begin
         if (reset) begin
-            cycle_complete <= 1;
-            valid_out <= 0;
+            looping <= 0;
         end 
-        else if(valid_in) begin
-            // stage 1: load the weight memory and start iterating
-            if (cycle_complete) begin
-                cycle_complete <= 0;
-                tgt_addr <= tgt_indptr[source_id];
-                end_addr <= tgt_indptr[source_id+1]-1;
-                valid_out <= 0;
-            end
-            else begin
-                // stage 2: each cycle we update one connection
-
-                // we now have valid data
-                valid_out <= 1;
-                target_id <= tgt_indices[tgt_addr];
-                new_good_tokens <= tgt_data_good[tgt_addr];
-                new_bad_tokens <= tgt_data_bad[tgt_addr];
-
-                // move on to the next connection
-                if (tgt_addr == end_addr) begin
-                    cycle_complete <= 1;
-                end 
-                else begin
-                    tgt_addr <= tgt_addr + 1;
+        else begin
+            case (instruction)
+                // RESERVED
+                3'b001 : begin
                 end
-            end
+
+                // set the indptr address for the currently selected processor
+                3'b010: begin
+                    tgt_indptr[source_id] <= prog_data[$clog2(NUM_CONNECTIONS)-1:0];
+                end
+
+                // set the index for the currently selected connection
+                3'b011 : begin
+                    tgt_indices[connection_id] <= prog_data[$clog2(NUM_PROCESSORS)-1:0];
+                end
+
+                // set the good token weight for the currently selected connection
+                3'b100 : begin
+                    tgt_new_good_tokens[connection_id] <= prog_data[NEW_TOKENS_BITS-1:0];
+                end
+
+                // set the bad token weight for the currently selected connection
+                3'b101 : begin
+                    tgt_new_bad_tokens[connection_id] <= prog_data[NEW_TOKENS_BITS-1:0];
+                end
+
+                // start iteration over all outgoing connections for this neuron
+                3'b110 : begin
+                    // stage 1: load the address range and start iterating
+                    tgt_addr <= tgt_indptr[source_id];
+                    end_addr <= tgt_indptr[source_id+1];
+                    done <= 0;
+                end
+
+                // keep going until we have iterated over all outgoing connections for this neuron once, then wait
+                3'b111 : begin
+                    if (tgt_addr != end_addr) begin
+                        // we now have valid data
+                        target_id <= tgt_indices[tgt_addr];
+                        new_good_tokens <= tgt_new_good_tokens[tgt_addr];
+                        new_bad_tokens <= tgt_new_bad_tokens[tgt_addr];
+
+                        tgt_addr <= tgt_addr + 1;
+                    end
+                    else begin
+                        done <= 1;
+                    end
+                end
+
+                // default: do nothing
+                default : begin
+                end
+            endcase
         end
     end
 

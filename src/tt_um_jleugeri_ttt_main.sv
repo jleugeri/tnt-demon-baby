@@ -20,7 +20,7 @@ module tt_um_jleugeri_ttt_main #(
     parameter int NEW_TOKENS_BITS = 4,
     parameter int TOKENS_BITS = 8,
     parameter int DATA_BITS = 8,
-    parameter int PROG_HEADER = 8,
+    parameter int INSTRUCTION = 8,
     parameter int PROG_BITS = 8,
     parameter int DURATION_BITS = 8
 ) (
@@ -36,19 +36,16 @@ module tt_um_jleugeri_ttt_main #(
     output logic [$clog2(NUM_PROCESSORS)-1:0] processor_id,
     output logic [1:0] token_startstop,
     // programming logic
-    input logic [PROG_HEADER-1:0] prog_header,
+    input logic [INSTRUCTION-1:0] instruction,
     input logic [PROG_BITS-1:0] prog_data
 );
 
     // internal control wires
-    logic network_reset;
-    logic network_valid_in;
-    logic network_valid_out;
-
-    logic processor_reset;
-
+    logic network_done;
+    
     // internal address wires
-    wire [DURATION_BITS-1:0] source_id;
+    wire [$clog2(NUM_PROCESSORS)-1:0] source_id;
+    wire [$clog2(NUM_CONNECTIONS)-1:0] connection_id;
     wire [DURATION_BITS-1:0] target_id;
 
     // internal data wires
@@ -60,30 +57,27 @@ module tt_um_jleugeri_ttt_main #(
     wire signed [NEW_TOKENS_BITS-1:0] new_bad_tokens;
 
 
+
     // instantiate the connections
     tt_um_jleugeri_ttt_network #(
-        .NUM_PROCESSORS(NUM_PROCESSORS),
-        .NUM_CONNECTIONS(NUM_CONNECTIONS),
-        .NEW_TOKENS_BITS(NEW_TOKENS_BITS)
+        .NUM_PROCESSORS(10),
+        .NUM_CONNECTIONS(50),
+        .NEW_TOKENS_BITS(4) 
     ) net (
         // control inputs / outputs
         .clk(clock_fast),
-        .reset(network_reset),
-        .valid_in(network_valid_in),
+        .reset(reset),
         .source_id(source_id),
+        .connection_id(connection_id),
         .done(network_done),
-        .valid_out(network_valid_out),
-
-        // inputs from processor
-        .token_startstop(token_startstop),
         
         // outputs to processor
         .target_id(target_id),
-        .new_good_tokens(tgt_new_good_tokens),
-        .new_bad_tokens(tgt_new_bad_tokens),
+        .new_good_tokens(new_good_tokens),
+        .new_bad_tokens(new_bad_tokens),
 
         // programming inputs
-        .prog_header(prog_header),
+        .instruction(instruction),
         .prog_data(prog_data)
     );
 
@@ -99,17 +93,18 @@ module tt_um_jleugeri_ttt_main #(
         // control inputs
         .clock_fast(clock_fast),
         .clock_slow(clock_slow),
-        .reset(processor_reset),
-        .neuron_id(source_id),
+        .reset(reset),
+        .neuron_id(neuron_id),
         // data inputs
         .new_good_tokens(new_good_tokens),
         .new_bad_tokens(new_bad_tokens),
         // data outputs
         .token_startstop(token_startstop),
         // programming inputs
-        .prog_header(prog_header),
+        .instruction(instruction),
         .prog_data(prog_data)
     );
+
 
 /*
 STUFF from old mux object:
