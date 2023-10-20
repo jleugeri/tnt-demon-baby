@@ -7,9 +7,10 @@ module tt_um_jleugeri_ttt_network #(
     // control inputs / outputs
     input logic clk,
     input logic reset,
-    input logic [$clog2(NUM_PROCESSORS)-1:0] source_id,
+    input logic [$clog2(NUM_PROCESSORS)-1:0] processor_id,
     input logic [$clog2(NUM_CONNECTIONS)-1:0] connection_id,
     output logic done,
+    output logic valid,
     
     // outputs to processor
     output logic [$clog2(NUM_PROCESSORS)-1:0] target_id,
@@ -33,7 +34,6 @@ module tt_um_jleugeri_ttt_network #(
     logic [NEW_TOKENS_BITS-1:0] tgt_new_bad_tokens[NUM_CONNECTIONS-1:0];
 
     // memory address counters
-    //logic [$clog2(NUM_PROCESSORS)]
 
 
     logic looping;
@@ -44,13 +44,19 @@ module tt_um_jleugeri_ttt_network #(
         end 
         else begin
             case (instruction)
+                // DO NOTHING
+                3'b000 : begin
+                    done <= 0;
+                    valid <= 0;
+                end
+
                 // RESERVED
                 3'b001 : begin
                 end
 
                 // set the indptr address for the currently selected processor
                 3'b010: begin
-                    tgt_indptr[source_id] <= prog_data[$clog2(NUM_CONNECTIONS)-1:0];
+                    tgt_indptr[processor_id] <= prog_data[$clog2(NUM_CONNECTIONS)-1:0];
                 end
 
                 // set the index for the currently selected connection
@@ -71,9 +77,10 @@ module tt_um_jleugeri_ttt_network #(
                 // start iteration over all outgoing connections for this neuron
                 3'b110 : begin
                     // stage 1: load the address range and start iterating
-                    tgt_addr <= tgt_indptr[source_id];
-                    end_addr <= tgt_indptr[source_id+1];
+                    tgt_addr <= tgt_indptr[processor_id];
+                    end_addr <= tgt_indptr[processor_id+1];
                     done <= 0;
+                    valid <= 0;
                 end
 
                 // keep going until we have iterated over all outgoing connections for this neuron once, then wait
@@ -85,14 +92,12 @@ module tt_um_jleugeri_ttt_network #(
                         new_bad_tokens <= tgt_new_bad_tokens[tgt_addr];
 
                         tgt_addr <= tgt_addr + 1;
+                        valid <= 1;
                     end
                     else begin
                         done <= 1;
+                        valid <=0;
                     end
-                end
-
-                // default: do nothing
-                default : begin
                 end
             endcase
         end

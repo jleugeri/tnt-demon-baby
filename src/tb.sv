@@ -19,6 +19,7 @@ module tb ();
     // instantiate the sub-testbenches
     tb_processor_core tb_processor_core();
     tb_network tb_network();
+    tb_main tb_main();
 
     /*
     // wire up the inputs and outputs

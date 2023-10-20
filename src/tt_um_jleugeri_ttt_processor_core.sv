@@ -11,7 +11,7 @@ module tt_um_jleugeri_ttt_processor_core #(
     input logic clock_fast,
     input logic clock_slow,
     input logic reset,
-    input logic [$clog2(NUM_PROCESSORS)-1:0] neuron_id,
+    input logic [$clog2(NUM_PROCESSORS)-1:0] processor_id,
     // data inputs
     input logic signed [NEW_TOKENS_BITS-1:0] new_good_tokens,
     input logic signed [NEW_TOKENS_BITS-1:0] new_bad_tokens,
@@ -36,63 +36,67 @@ module tt_um_jleugeri_ttt_processor_core #(
         // if reset, reset all internal registers
         if (reset) begin
             // initialize the token counts to negative thresholds
-            bad_tokens[neuron_id] <= -bad_tokens_threshold[neuron_id];
-            good_tokens[neuron_id] <= -good_tokens_threshold[neuron_id];
-            isOn[neuron_id] <= 0;
-            remaining_duration[neuron_id] <= 0;
+            bad_tokens[processor_id] <= -bad_tokens_threshold[processor_id];
+            good_tokens[processor_id] <= -good_tokens_threshold[processor_id];
+            isOn[processor_id] <= 0;
+            remaining_duration[processor_id] <= 0;
         end
         // otherwise, perform an action (either programming or running the processor)
         else begin
             // check if we should program the memory, and if so, which
             case (instruction)
+                // DO NOTHING
+                3'b000 : begin
+                end
+
                 // program the duration
                 3'b001 : begin
-                    duration[neuron_id] <= prog_data;
+                    duration[processor_id] <= prog_data;
                 end
                 // program the good tokens threshold
                 3'b010 : begin
-                    good_tokens_threshold[neuron_id] <= prog_data;
-                    good_tokens[neuron_id] <= -prog_data;
+                    good_tokens_threshold[processor_id] <= prog_data;
+                    good_tokens[processor_id] <= -prog_data;
                 end
                 // program the bad tokens threshold
                 3'b011 : begin
-                    bad_tokens_threshold[neuron_id] <= prog_data;
-                    bad_tokens[neuron_id] <= -prog_data;
+                    bad_tokens_threshold[processor_id] <= prog_data;
+                    bad_tokens[processor_id] <= -prog_data;
                 end
                 // update incoming tokens
                 3'b100 : begin 
                     // pipelining step 1: update the neuron's counter
-                    good_tokens[neuron_id] <= good_tokens[neuron_id] + TOKENS_BITS'(new_good_tokens);
-                    bad_tokens[neuron_id] <= bad_tokens[neuron_id] + TOKENS_BITS'(new_bad_tokens);
+                    good_tokens[processor_id] <= good_tokens[processor_id] + TOKENS_BITS'(new_good_tokens);
+                    bad_tokens[processor_id] <= bad_tokens[processor_id] + TOKENS_BITS'(new_bad_tokens);
                 end
 
                 // update the internal state
                 3'b101 : begin
                     // pipelining step 2: check if we need to generate our own token here
-                    if ( !isOn[neuron_id] && ( good_tokens[neuron_id] >= 0 ) && ( bad_tokens[neuron_id] <= 0 ) ) begin
+                    if ( !isOn[processor_id] && ( good_tokens[processor_id] >= 0 ) && ( bad_tokens[processor_id] <= 0 ) ) begin
                         // turn on 
-                        isOn[neuron_id] <= 1;
+                        isOn[processor_id] <= 1;
 
                         // initialize the countdown                
-                        remaining_duration[neuron_id] <= duration[neuron_id];
+                        remaining_duration[processor_id] <= duration[processor_id];
 
                         // signal the beginning of the token
                         token_startstop <= 2'b10;
                     end 
-                    else if ( isOn[neuron_id] && ((bad_tokens[neuron_id] > 0) || remaining_duration[neuron_id] == 0 )) begin
+                    else if ( isOn[processor_id] && ((bad_tokens[processor_id] > 0) || remaining_duration[processor_id] == 0 )) begin
                         // turn off
-                        isOn[neuron_id] <= 0;
+                        isOn[processor_id] <= 0;
 
                         // end the countdown
-                        remaining_duration[neuron_id] <= 0;
+                        remaining_duration[processor_id] <= 0;
 
                         // signal the end of the token
                         token_startstop <= 2'b01;
                     end 
                     else begin
                         // if the countdown is running and the slow clock is currently on, decrement the countdown
-                        if (isOn[neuron_id] && clock_slow) begin
-                            remaining_duration[neuron_id] <= remaining_duration[neuron_id] - 1;
+                        if (isOn[processor_id] && clock_slow) begin
+                            remaining_duration[processor_id] <= remaining_duration[processor_id] - 1;
                         end
 
                         // reset the outputs

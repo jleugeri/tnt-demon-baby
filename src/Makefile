@@ -14,7 +14,7 @@ COMPILE_ARGS	+= --timing
 EXTRA_ARGS 		+= --trace --trace-structs
 # $(PWD)/tt_um_jleugeri_ttt_network.v $(PWD)/tt_um_jleugeri_ttt_respite.v 
 VERILOG_SOURCES += $(PWD)/tt_um_jleugeri_ttt_processor_core.sv $(PWD)/tt_um_jleugeri_ttt_network.sv $(PWD)/tt_um_jleugeri_ttt_main.sv $(PWD)/tt_um_jleugeri_ticktocktokens.sv
-VERILOG_SOURCES += $(PWD)/tb.sv $(PWD)/tb_processor_core.sv $(PWD)/tb_network.sv
+VERILOG_SOURCES += $(PWD)/tb.sv $(PWD)/tb_processor_core.sv $(PWD)/tb_network.sv $(PWD)/tb_main.sv
 
 else
 

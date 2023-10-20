@@ -8,9 +8,10 @@ module tb_network();
     // control inputs / outputs
     logic clk;
     logic reset;
-    logic [$clog2(NUM_PROCESSORS)-1:0] source_id;
+    logic [$clog2(NUM_PROCESSORS)-1:0] processor_id;
     logic [$clog2(NUM_CONNECTIONS)-1:0] connection_id;
     logic done;
+    logic valid;
     
     // outputs to processor
     logic [$clog2(NUM_PROCESSORS)-1:0] target_id;
@@ -30,9 +31,10 @@ module tb_network();
         // control inputs / outputs
         .clk(clk),
         .reset(reset),
-        .source_id(source_id),
+        .processor_id(processor_id),
         .connection_id(connection_id),
         .done(done),
+        .valid(valid),
         
         // outputs to processor
         .target_id(target_id),

@@ -271,10 +271,6 @@ class PyTTT():
         
         assert len(badThreshold) == self.NUM_PROCESSORS, "good_threshold and bad_threshold must have the same length"
         assert W_good.shape == W_bad.shape == (self.NUM_PROCESSORS, self.NUM_PROCESSORS), "W_good and W_bad must be square matrices of size ({},{})".format(self.NUM_PROCESSORS, self.NUM_PROCESSORS)
-        
-        # collect incoming good and bad tokens for each processor (for the current time-step)
-        self.goodTokensIn = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
-        self.badTokensIn = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
 
         # keep track of the internal states of the processors
         self.goodTokens = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
@@ -294,8 +290,8 @@ class PyTTT():
         self.badTokensThreshold[:] = badThreshold
         self.duration = np.zeros((self.NUM_PROCESSORS,), dtype=np.uint32)
         self.duration[:] = duration
-        self.W_good = np.zeros((self.NUM_PROCESSORS, self.NUM_PROCESSORS), dtype=np.int32)
-        self.W_bad = np.zeros((self.NUM_PROCESSORS, self.NUM_PROCESSORS), dtype=np.int32)
+        self.W_good = W_good
+        self.W_bad = W_bad
 
 
     """
@@ -325,17 +321,19 @@ class PyTTT():
         n = token_startstop.shape[1]
         for i in range(n):
             may_turn_on = good[i] >= good_thresh[i]
-            may_turn_off = bad[i] >= bad_thresh[i]
+            may_turn_off = bad[i] > bad_thresh[i]
             is_expired = timeout[i] == 0
             token_startstop[0,i] = ~isOn[i] & may_turn_on & ~may_turn_off
             token_startstop[1,i] = isOn[i] & (may_turn_off | is_expired)
 
+    def stimulate_processors(self, good_tokens_in, bad_tokens_in):
+        # accumulate incoming tokens
+        self.goodTokens += good_tokens_in
+        self.badTokens += bad_tokens_in
+
     def step_processors(self):
         """Compute the processors' state updates from the processors' inputs {good,bad}_tokens_in, and produce the outputs {start,stop}_token.
         """
-        # accumulate incoming tokens
-        self.goodTokens += self.goodTokensIn
-        self.badTokens += self.badTokensIn
         
         # check firing conditions
         self._check_state(
@@ -360,8 +358,7 @@ class PyTTT():
     def step_NoC(self):
         """Compute the NoC update from the processors' outputs {start,stop}_token, and produce the inputs {good,bad}_tokens_in for the next cycle."""
         delta_tokens = (self.startTokens.astype(int) - self.stopTokens.astype(int))
-        self.goodTokensIn += self.W_good @ delta_tokens
-        self.badTokensIn += self.W_bad @ delta_tokens
+        self.stimulate_processors(self.W_good @ delta_tokens, self.W_bad @ delta_tokens)
 
     def run(self, inp_good_tokens_iter, inp_bad_tokens_iter):
         inp_good_tokens_iter = iter(inp_good_tokens_iter)
@@ -369,14 +366,13 @@ class PyTTT():
 
         for tok_good,tok_bad in zip(inp_good_tokens_iter, inp_bad_tokens_iter):
             # reset inputs, add external inputs
-            self.goodTokensIn[:] = tok_good
-            self.badTokensIn[:] = tok_bad
-
-            # add recurrent inputs
-            self.step_NoC()
+            self.stimulate_processors(tok_good, tok_bad)
 
             # update each processor
             self.step_processors()
+
+            # add recurrent inputs
+            self.step_NoC()
 
             # yield the outputs
             yield (self.startTokens, self.stopTokens)

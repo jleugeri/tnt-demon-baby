@@ -17,7 +17,7 @@ module tt_um_jleugeri_ticktocktokens (
     localparam int TOKENS_BITS = 8;
     localparam int DATA_BITS = 8;
     localparam int PROG_HEADER = 4;
-    localparam int PROG_BITS = 8;
+    localparam int PROG_WIDTH = 8;
     localparam int DURATION_BITS = 8;
 
     // get positive reset
@@ -29,7 +29,7 @@ module tt_um_jleugeri_ticktocktokens (
     logic [TOKENS_BITS-1:0] tokens_in;
     logic [$clog2(NUM_PROCESSORS)-1:0] processor_id;
     logic [PROG_HEADER-1:0] prog_header;
-    logic [PROG_BITS-1:0] prog_data;
+    logic [PROG_WIDTH-1:0] prog_data;
     logic [1:0] token_startstop;
 
     logic done;
@@ -58,7 +58,7 @@ module tt_um_jleugeri_ticktocktokens (
         .TOKENS_BITS(TOKENS_BITS),
         .DATA_BITS(DATA_BITS),
         .PROG_HEADER(PROG_HEADER),
-        .PROG_BITS(PROG_BITS),
+        .PROG_WIDTH(PROG_WIDTH),
         .DURATION_BITS(DURATION_BITS)
     ) main (
         // control flow logic
