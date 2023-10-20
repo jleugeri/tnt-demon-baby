@@ -18,7 +18,6 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
     - run: | 
         sudo apt install libffi7
-        pip install --upgrade scipy
         python --version
         yosys --version
         iverilog -V
@@ -29,6 +28,7 @@ jobs:
     - name: test
       run: |
         cd src
+        python -m pip install --upgrade scipy
         make clean
         make
         # make will return success even if the test fails, so check for failure in the results.xml
