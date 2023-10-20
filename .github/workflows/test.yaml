@@ -18,6 +18,7 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
     - run: | 
         sudo apt install libffi7
+        pip install --upgrade scipy
         python --version
         yosys --version
         iverilog -V
