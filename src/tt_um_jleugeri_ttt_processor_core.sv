@@ -22,14 +22,14 @@ module tt_um_jleugeri_ttt_processor_core #(
     input logic [PROG_WIDTH-1:0] prog_data
 );
     // parameter memory
-    logic [NUM_PROCESSORS-1:0][TOKENS_BITS-1:0] good_tokens_threshold;
-    logic [NUM_PROCESSORS-1:0][TOKENS_BITS-1:0] bad_tokens_threshold;
-    logic [NUM_PROCESSORS-1:0][DURATION_BITS-1:0] duration;
+    logic [TOKENS_BITS-1:0] good_tokens_threshold[NUM_PROCESSORS-1:0];
+    logic [TOKENS_BITS-1:0] bad_tokens_threshold[NUM_PROCESSORS-1:0];
+    logic [DURATION_BITS-1:0] duration[NUM_PROCESSORS-1:0];
 
     // internal state variables
-    logic signed [NUM_PROCESSORS-1:0][TOKENS_BITS-1:0] good_tokens;
-    logic signed [NUM_PROCESSORS-1:0][TOKENS_BITS-1:0] bad_tokens;
-    logic [NUM_PROCESSORS-1:0][DURATION_BITS-1:0] remaining_duration;
+    logic signed [TOKENS_BITS-1:0] good_tokens[NUM_PROCESSORS-1:0];
+    logic signed [TOKENS_BITS-1:0] bad_tokens[NUM_PROCESSORS-1:0];
+    logic [DURATION_BITS-1:0] remaining_duration[NUM_PROCESSORS-1:0];
     logic [NUM_PROCESSORS-1:0] isOn;
 
     always_ff @(posedge clock_fast ) begin
