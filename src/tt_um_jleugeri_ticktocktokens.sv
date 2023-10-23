@@ -89,15 +89,16 @@ module tt_um_jleugeri_ticktocktokens (
 
 
 
-    localparam int NUM_PROCESSORS = 15;
-    localparam int NUM_CONNECTIONS = 225;
+    localparam int NUM_PROCESSORS = 8;
+    localparam int NUM_CONNECTIONS = 64;
     localparam int NEW_TOKEN_BITS = 4;
     localparam int TOKEN_BITS = 8;
     localparam int DURATION_BITS = 8;
 
     // data I/O logic
     logic signed [NEW_TOKEN_BITS-1:0] good_tokens_in, bad_tokens_in;
-    logic [$clog2(NUM_PROCESSORS)-1:0] processor_id,  processor_id_out;
+    logic [$clog2(NUM_PROCESSORS+1)-1:0] processor_id;
+    logic [$clog2(NUM_PROCESSORS)-1:0]  processor_id_out;
     logic [$clog2(NUM_CONNECTIONS)-1:0] connection_id_in;
     logic [1:0] token_startstop;
     logic [1:0] stage;
@@ -127,18 +128,18 @@ module tt_um_jleugeri_ticktocktokens (
     assign instruction = ui_in[7:4];
 
     // for execution mode
-    assign processor_id = ui_in[3:0];
+    assign processor_id = $clog2(NUM_PROCESSORS+1)'(ui_in[3:0]);
     assign good_tokens_in = uio_in[7:4];
     assign bad_tokens_in  = uio_in[3:0];
 
     // for programming mode
     assign prog_tokens = ui_in[3:0];
-    assign connection_id_in = uio_in;
+    assign connection_id_in = $clog2(NUM_CONNECTIONS)'(uio_in);
     assign prog_threshold = uio_in;
     assign prog_duration = uio_in;
 
     // assign outputs
-    assign uo_out = {processor_id_out, token_startstop, stage};
+    assign uo_out = {4'(processor_id_out), token_startstop, stage};
     assign uio_out = 8'bZZZZZZZZ;
 
     // instantiate the main module

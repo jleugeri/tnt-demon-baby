@@ -13,7 +13,7 @@ module tt_um_jleugeri_ttt_main #(
     input logic [3:0] instruction,
     output logic [1:0] stage,
     // data I/O logic
-    input  logic [$clog2(NUM_PROCESSORS)-1:0] processor_id_in,
+    input  logic [$clog2(NUM_PROCESSORS+1)-1:0] processor_id_in,
     output logic [$clog2(NUM_PROCESSORS)-1:0] processor_id_out,
     input  logic signed [NEW_TOKEN_BITS-1:0] good_tokens_in,
     input  logic signed [NEW_TOKEN_BITS-1:0] bad_tokens_in,
@@ -39,7 +39,7 @@ module tt_um_jleugeri_ttt_main #(
     logic [NEW_TOKEN_BITS-1:0] net_prog_tokens;
 
     // internal address wires
-    logic [$clog2(NUM_PROCESSORS)-1:0] source_id;
+    logic [$clog2(NUM_PROCESSORS+1)-1:0] source_id;
     logic [$clog2(NUM_CONNECTIONS)-1:0] connection_id;
     logic [$clog2(NUM_PROCESSORS)-1:0] target_id;
 
@@ -128,7 +128,7 @@ module tt_um_jleugeri_ttt_main #(
                 2'b10 : begin
                     instruction_net <= 3'b000;
                     instruction_proc <= {1'b1,instruction[1:0]};
-                    processor_id <= processor_id_in;
+                    processor_id <= $clog2(NUM_PROCESSORS)'(processor_id_in);
                     proc_prog_duration <= prog_duration;
                     proc_prog_threshold <= prog_threshold;
                 end
@@ -162,7 +162,7 @@ module tt_um_jleugeri_ttt_main #(
                                 // read input
                                 2'b01: begin
                                     instruction_proc <= 3'b001;
-                                    processor_id <= processor_id_in;
+                                    processor_id <= $clog2(NUM_PROCESSORS)'(processor_id_in);
                                     proc_new_good_tokens <= good_tokens_in;
                                     proc_new_bad_tokens <= bad_tokens_in;
                                 end
@@ -192,8 +192,8 @@ module tt_um_jleugeri_ttt_main #(
                             // outputs of the processors arrive with a one-cycle delay
                             // if this was not the first clock cycle, store the output of the previous processor
                             if(processor_id_internal != 0) begin
-                                token_start_buf[processor_id_internal_prev] <= token_startstop_internal[1];
-                                token_stop_buf[processor_id_internal_prev] <= token_startstop_internal[0];
+                                token_start_buf[$clog2(NUM_PROCESSORS)'(processor_id_internal_prev)] <= token_startstop_internal[1];
+                                token_stop_buf[$clog2(NUM_PROCESSORS)'(processor_id_internal_prev)] <= token_startstop_internal[0];
                             end
 
                             //advance to next stage
@@ -212,7 +212,7 @@ module tt_um_jleugeri_ttt_main #(
                                 // update the next processor and advance
                                 processor_id_internal_prev <= processor_id_internal;
                                 processor_id_internal <= processor_id_internal + 1;
-                                processor_id <= processor_id_internal + 1;
+                                processor_id <= $clog2(NUM_PROCESSORS)'(processor_id_internal) + 1;
                             end
                         end
 
@@ -225,10 +225,10 @@ module tt_um_jleugeri_ttt_main #(
                             end
                             else begin
                                 // cycle over all processors, and for each, cycle over all connections before moving on to the next processor
-                                if (token_start_buf[processor_id_internal] ^ token_stop_buf[processor_id_internal]) begin
+                                if (token_start_buf[$clog2(NUM_PROCESSORS)'(processor_id_internal)] ^ token_stop_buf[$clog2(NUM_PROCESSORS)'(processor_id_internal)]) begin
                                     // write output back to host
-                                    processor_id_out <= processor_id_internal;
-                                    token_startstop <= {token_start_buf[processor_id_internal], token_stop_buf[processor_id_internal]};
+                                    processor_id_out <= $clog2(NUM_PROCESSORS)'(processor_id_internal);
+                                    token_startstop <= {token_start_buf[$clog2(NUM_PROCESSORS)'(processor_id_internal)], token_stop_buf[$clog2(NUM_PROCESSORS)'(processor_id_internal)]};
                                     output_valid <= 1;
                                     // if the processor started/stopped a token, start cycling over its connections
 
@@ -265,7 +265,7 @@ module tt_um_jleugeri_ttt_main #(
                                 if (!first_cycle) begin
                                     // if the processor started a token, use positive weights, otherwise, negative
                                     
-                                    if (token_start_buf[processor_id_internal_prev]) begin
+                                    if (token_start_buf[$clog2(NUM_PROCESSORS)'(processor_id_internal_prev)]) begin
                                         proc_new_good_tokens <= net_new_good_tokens;
                                         proc_new_bad_tokens <= net_new_bad_tokens;
                                     end

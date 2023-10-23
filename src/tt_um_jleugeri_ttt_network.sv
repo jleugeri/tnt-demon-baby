@@ -6,7 +6,7 @@ module tt_um_jleugeri_ttt_network #(
     // control inputs / outputs
     input logic clk,
     input logic reset,
-    input logic [$clog2(NUM_PROCESSORS)-1:0] processor_id,
+    input logic [$clog2(NUM_PROCESSORS+1)-1:0] processor_id,
     input logic [$clog2(NUM_CONNECTIONS)-1:0] connection_id,
     output logic done,
     output logic valid,
@@ -100,7 +100,7 @@ module tt_um_jleugeri_ttt_network #(
 
                 // set the index for the currently selected connection
                 3'b111 : begin
-                    tgt_indices[connection_id] <= processor_id;
+                    tgt_indices[connection_id] <= $clog2(NUM_PROCESSORS)'(processor_id);
                 end
             endcase
         end
