@@ -83,7 +83,6 @@ def diff_string(mat1: np.ndarray, mat2: np.ndarray, *labels, indent=2):
         ) for (l, coords) in zip(zip(*concrete_labels), zip(*nz_indices))
     ])
 
-@cocotb.coroutine
 async def program_processor(clock, dut, goodTokenThreshold: np.ndarray, badTokenThreshold: np.ndarray, duration: np.ndarray, prefix = 1):
     NUM_PROCESSORS = len(goodTokenThreshold)
     assert goodTokenThreshold.shape == badTokenThreshold.shape == duration.shape == (NUM_PROCESSORS,), "shape of goodTokenThreshold, badTokenThreshold and duration must be equal to ({},)".format(NUM_PROCESSORS)
@@ -126,7 +125,6 @@ async def program_processor(clock, dut, goodTokenThreshold: np.ndarray, badToken
     dut.prog_threshold.value = old_prog_threshold
     dut.reset.value = old_reset
 
-@cocotb.coroutine
 async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, prefix = 1):
     NUM_PROCESSORS = int(W_good.shape[0])
     NUM_CONNECTIONS = int(dut.NUM_CONNECTIONS)
@@ -196,7 +194,6 @@ async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, pre
     await ClockCycles(clock, 1)
 
 
-@cocotb.coroutine
 async def program(clock, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration):
     # program the network
     await program_network(dut.clock_fast, dut, W_good, W_bad, prefix=0b11)
@@ -204,7 +201,6 @@ async def program(clock, dut, goodTokensThreshold, badTokensThreshold, W_good, W
     await program_processor(dut.clock_fast, dut, goodTokensThreshold, badTokensThreshold, duration, prefix=0b10)
 
 
-@cocotb.coroutine
 async def inject_tokens(clock, dut, good_tokens: np.ndarray, bad_tokens: np.ndarray):
     NUM_PROCESSORS = len(good_tokens)
     assert good_tokens.shape == bad_tokens.shape == (NUM_PROCESSORS,), "shape of good_tokens and bad_tokens must be equal to ({},)".format(NUM_PROCESSORS)
@@ -914,7 +910,6 @@ def to_n_bit_twos_complement(num, nbit):
     else:
         return ((1 << nbit) + num) & ((1 << nbit) - 1)
 
-@cocotb.coroutine
 async def program_via_interface(clock, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration):
     NUM_PROCESSORS = int(W_good.shape[0])
     NUM_CONNECTIONS = int(dut.ttt.NUM_CONNECTIONS)

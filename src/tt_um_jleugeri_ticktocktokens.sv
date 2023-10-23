@@ -139,6 +139,7 @@ module tt_um_jleugeri_ticktocktokens (
 
     // assign outputs
     assign uo_out = {processor_id_out, token_startstop, stage};
+    assign uio_out = 8'bZZZZZZZZ;
 
     // instantiate the main module
     tt_um_jleugeri_ttt_main #(
