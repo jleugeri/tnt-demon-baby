@@ -90,10 +90,10 @@ module tt_um_jleugeri_ticktocktokens (
 
 
     localparam int NUM_PROCESSORS = 8;
-    localparam int NUM_CONNECTIONS = 64;
-    localparam int NEW_TOKEN_BITS = 4;
-    localparam int TOKEN_BITS = 8;
-    localparam int DURATION_BITS = 8;
+    localparam int NUM_CONNECTIONS = 32;
+    localparam int NEW_TOKEN_BITS = 2;
+    localparam int TOKEN_BITS = 7;
+    localparam int DURATION_BITS = 7;
 
     // data I/O logic
     logic signed [NEW_TOKEN_BITS-1:0] good_tokens_in, bad_tokens_in;
@@ -129,14 +129,14 @@ module tt_um_jleugeri_ticktocktokens (
 
     // for execution mode
     assign processor_id = $clog2(NUM_PROCESSORS+1)'(ui_in[3:0]);
-    assign good_tokens_in = uio_in[7:4];
-    assign bad_tokens_in  = uio_in[3:0];
+    assign good_tokens_in = NEW_TOKEN_BITS'(uio_in[7:4]);
+    assign bad_tokens_in  = NEW_TOKEN_BITS'(uio_in[3:0]);
 
     // for programming mode
-    assign prog_tokens = ui_in[3:0];
+    assign prog_tokens = NEW_TOKEN_BITS'(ui_in[3:0]);
     assign connection_id_in = $clog2(NUM_CONNECTIONS)'(uio_in);
-    assign prog_threshold = uio_in;
-    assign prog_duration = uio_in;
+    assign prog_threshold = TOKEN_BITS'(uio_in);
+    assign prog_duration = DURATION_BITS'(uio_in);
 
     // assign outputs
     assign uo_out = {4'(processor_id_out), token_startstop, stage};
