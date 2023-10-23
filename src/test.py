@@ -84,7 +84,7 @@ def diff_string(mat1: np.ndarray, mat2: np.ndarray, *labels, indent=2):
     ])
 
 @cocotb.coroutine
-async def program_processor(clock, dut, goodTokenThreshold: np.ndarray, badTokenThreshold: np.ndarray, duration: np.ndarray, prefix = 0):
+async def program_processor(clock, dut, goodTokenThreshold: np.ndarray, badTokenThreshold: np.ndarray, duration: np.ndarray, prefix = 1):
     NUM_PROCESSORS = len(goodTokenThreshold)
     assert goodTokenThreshold.shape == badTokenThreshold.shape == duration.shape == (NUM_PROCESSORS,), "shape of goodTokenThreshold, badTokenThreshold and duration must be equal to ({},)".format(NUM_PROCESSORS)
 
@@ -94,7 +94,8 @@ async def program_processor(clock, dut, goodTokenThreshold: np.ndarray, badToken
     old_reset = dut.reset.value
     old_processor_id = dut.processor_id.value
     old_instruction = dut.instruction.value
-    old_prog_data = dut.prog_data.value
+    old_prog_duration = dut.prog_duration.value
+    old_prog_threshold = dut.prog_threshold.value
 
     dut.reset.value = 0
 
@@ -103,29 +104,30 @@ async def program_processor(clock, dut, goodTokenThreshold: np.ndarray, badToken
         dut.processor_id.value = i
 
         # set the duration to DURATION
-        dut.instruction.value = 0b001 | (prefix << 3)
-        dut.prog_data.value = int(duration[i])
+        dut.instruction.value = 0b01 | (prefix << 2)
+        dut.prog_duration.value = int(duration[i])
         await ClockCycles(clock, 1)
 
         # set the good token threshold
-        dut.instruction.value = 0b010 | (prefix << 3)
-        dut.prog_data.value = int(goodTokenThreshold[i])
+        dut.instruction.value = 0b10 | (prefix << 2)
+        dut.prog_threshold.value = int(goodTokenThreshold[i])
         await ClockCycles(clock, 1)
 
         # set the bad token threshold
-        dut.instruction.value = 0b011 | (prefix << 3)
-        dut.prog_data.value = int(badTokenThreshold[i])
+        dut.instruction.value = 0b11 | (prefix << 2)
+        dut.prog_threshold.value = int(badTokenThreshold[i])
         await ClockCycles(clock, 1)
     
     await ClockCycles(clock, 1)
     #pop context
     dut.processor_id.value = old_processor_id
     dut.instruction.value = old_instruction
-    dut.prog_data.value = old_prog_data
+    dut.prog_duration.value = old_prog_duration
+    dut.prog_threshold.value = old_prog_threshold
     dut.reset.value = old_reset
 
 @cocotb.coroutine
-async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, prefix = 0):
+async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, prefix = 1):
     NUM_PROCESSORS = int(W_good.shape[0])
     NUM_CONNECTIONS = int(dut.NUM_CONNECTIONS)
     assert W_good.shape == W_bad.shape == (NUM_PROCESSORS, NUM_PROCESSORS), "shape of W_good and W_bad must be equal to ({}, {})".format(NUM_PROCESSORS, NUM_PROCESSORS)
@@ -148,16 +150,16 @@ async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, pre
     old_processor_id = dut.processor_id.value
     old_connection_id = dut.connection_id.value
     old_instruction = dut.instruction.value
-    old_prog_data = dut.prog_data.value
+    old_prog_tokens = dut.prog_tokens.value
 
     dut.reset.value = 0
 
     # write all indptrs
-    dut.instruction.value = 0b010 | (prefix << 3)
+    dut.instruction.value = 0b10 | (prefix << 2)
     for i in range(NUM_PROCESSORS+1):
         # write indptr for neuron i
         dut.processor_id.value = i
-        dut.prog_data.value = int(has_connection.indptr[i])
+        dut.connection_id.value = int(has_connection.indptr[i])
         await ClockCycles(clock, 1)
 
     # write all data 
@@ -169,25 +171,25 @@ async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, pre
             dut.connection_id.value = j
 
             # write index
-            dut.instruction.value = 0b011 | (prefix << 3)
-            dut.prog_data.value = int(has_connection.indices[j])
+            dut.instruction.value = 0b11 | (prefix << 2)
+            dut.processor_id.value = int(has_connection.indices[j])
             await ClockCycles(clock, 1)
 
             # write good token weight
-            dut.instruction.value = 0b100 | (prefix << 3)
-            dut.prog_data.value = int(W_good[i,has_connection.indices[j]])
+            dut.instruction.value = 0b00 | (prefix << 2)
+            dut.prog_tokens.value = int(W_good[i,has_connection.indices[j]])
             await ClockCycles(clock, 1)
 
             # write bad token weight
-            dut.instruction.value = 0b101 | (prefix << 3)
-            dut.prog_data.value = int(W_bad[i,has_connection.indices[j]])
+            dut.instruction.value = 0b01 | (prefix << 2)
+            dut.prog_tokens.value = int(W_bad[i,has_connection.indices[j]])
             await ClockCycles(clock, 1)
 
     # pop context
     dut.processor_id.value = old_processor_id
     dut.connection_id.value = old_connection_id
     dut.instruction.value = old_instruction
-    dut.prog_data.value = old_prog_data
+    dut.prog_tokens.value = old_prog_tokens
     dut.reset.value = old_reset
 
     # wait one clock cycle for safety
@@ -214,7 +216,7 @@ async def inject_tokens(clock, dut, good_tokens: np.ndarray, bad_tokens: np.ndar
     old_new_bad_tokens = dut.new_bad_tokens.value
 
     # set operation to run
-    dut.instructions.value = 0b100
+    dut.instructions.value = 0b000
 
     for i in np.nonzero(good_tokens)[0]:
         # select the neuron with id i
@@ -265,9 +267,9 @@ async def test_core_programming(dut):
     await ClockCycles(clock, 1)
 
 
-    _good_tokens_threshold = unpack_bits_to_array(dut.proc.good_tokens_threshold.value, (dut.NUM_PROCESSORS,), dtype=np.uint8)
-    _bad_tokens_threshold = unpack_bits_to_array(dut.proc.bad_tokens_threshold.value, (dut.NUM_PROCESSORS,), dtype=np.uint8)
-    _duration = unpack_bits_to_array(dut.proc.duration.value, (dut.NUM_PROCESSORS,), dtype=np.uint8)
+    _good_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.proc.good_tokens_threshold))])
+    _bad_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.proc.bad_tokens_threshold))])
+    _duration = np.array([x.value.integer for x in reversed(list(dut.proc.duration))])
 
     # make sure the correct values were programmed in
     assert np.all(_good_tokens_threshold == goodTokenThreshold), "good token threshold not programmed correctly (observed {} != {})".format(_good_tokens_threshold, goodTokenThreshold)
@@ -383,7 +385,7 @@ async def test_core_against_golden_model_without_weights(dut):
     # then record our hardware implementation
     for (step,(good_in, bad_in)) in enumerate(zip(my_good_tokens_in, my_bad_tokens_in)):
         # do one update-step for the processor for each neuron to count incoming tokens
-        dut.instruction.value = 0b100
+        dut.instruction.value = 0b001
         for i in range(NUM_PROCESSORS):
             # select the neuron with id i
             dut.processor_id.value = i
@@ -396,7 +398,7 @@ async def test_core_against_golden_model_without_weights(dut):
             
 
         # do one update-step for the processor for each neuron to update internal states and record the outputs
-        dut.instruction.value = 0b101
+        dut.instruction.value = 0b010
         for i in range(NUM_PROCESSORS):
             # select the neuron with id i
             dut.processor_id.value = i
@@ -416,7 +418,7 @@ async def test_network_programming(dut):
     dut = dut.tb_network
     NUM_PROCESSORS = int(dut.NUM_PROCESSORS)
     NUM_CONNECTIONS = int(dut.NUM_CONNECTIONS)
-    NEW_TOKENS_BITS = int(dut.NEW_TOKENS_BITS)
+    NEW_TOKEN_BITS = int(dut.NEW_TOKEN_BITS)
     NUM_SAMPLES = 100
 
     # start simulation
@@ -465,7 +467,7 @@ async def test_network_cycle(dut):
     dut = dut.tb_network
     NUM_PROCESSORS = int(dut.NUM_PROCESSORS)
     NUM_CONNECTIONS = int(dut.NUM_CONNECTIONS)
-    NEW_TOKENS_BITS = int(dut.NEW_TOKENS_BITS)
+    NEW_TOKEN_BITS = int(dut.NEW_TOKEN_BITS)
     NUM_SAMPLES = 100
 
     dut._log.info("start")
@@ -511,7 +513,7 @@ async def test_network_cycle(dut):
     for i in range(NUM_PROCESSORS):
         dut.processor_id.value = i
         # start iterating
-        dut.instruction.value = 0b110
+        dut.instruction.value = 0b010
         await RisingEdge(clock)
         await FallingEdge(clock)
         
@@ -524,7 +526,7 @@ async def test_network_cycle(dut):
         should_end_addr.append(_indptr[i+1])
 
         # start cycling
-        dut.instruction.value = 0b111
+        dut.instruction.value = 0b011
         # now the results should start coming
         for j in range(_indptr[i], _indptr[i+1]):
             await RisingEdge(clock)
@@ -571,7 +573,7 @@ async def test_main_core_programming(dut):
     dut = dut.tb_main
     NUM_PROCESSORS = int(dut.NUM_PROCESSORS)
     NUM_CONNECTIONS = int(dut.NUM_CONNECTIONS)
-    NEW_TOKENS_BITS = int(dut.NEW_TOKENS_BITS)
+    NEW_TOKEN_BITS = int(dut.NEW_TOKEN_BITS)
     NUM_SAMPLES = 100
 
 
@@ -596,9 +598,9 @@ async def test_main_core_programming(dut):
     await ClockCycles(clock, 1)
 
     # test if the processors were programmed correctly
-    _good_tokens_threshold = unpack_bits_to_array(dut.main.proc.good_tokens_threshold.value, (dut.NUM_PROCESSORS,), dtype=np.uint8)
-    _bad_tokens_threshold = unpack_bits_to_array(dut.main.proc.bad_tokens_threshold.value, (dut.NUM_PROCESSORS,), dtype=np.uint8)
-    _duration = unpack_bits_to_array(dut.main.proc.duration.value, (dut.NUM_PROCESSORS,), dtype=np.uint8)
+    _good_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.main.proc.good_tokens_threshold))])
+    _bad_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.main.proc.bad_tokens_threshold))])
+    _duration = np.array([x.value.integer for x in reversed(list(dut.main.proc.duration))])
 
     # make sure the correct values were programmed in
     assert np.all(_good_tokens_threshold == goodTokensThreshold), "good token threshold not programmed correctly (observed {} != {})".format(_good_tokens_threshold, goodTokensThreshold)
@@ -612,7 +614,7 @@ async def test_main_network_programming(dut):
     dut = dut.tb_main
     NUM_PROCESSORS = int(dut.NUM_PROCESSORS)
     NUM_CONNECTIONS = int(dut.NUM_CONNECTIONS)
-    NEW_TOKENS_BITS = int(dut.NEW_TOKENS_BITS)
+    NEW_TOKEN_BITS = int(dut.NEW_TOKEN_BITS)
     NUM_SAMPLES = 100
 
 
@@ -662,7 +664,7 @@ async def test_main_execution_minimal(dut):
     dut = dut.tb_main
     NUM_PROCESSORS = int(dut.NUM_PROCESSORS)
     NUM_CONNECTIONS = int(dut.NUM_CONNECTIONS)
-    NEW_TOKENS_BITS = int(dut.NEW_TOKENS_BITS)
+    NEW_TOKEN_BITS = int(dut.NEW_TOKEN_BITS)
     NUM_SAMPLES = 20
 
 
@@ -731,10 +733,10 @@ async def test_main_execution_minimal(dut):
 
         if (len(nz_good) == 0) and (len(nz_bad) == 0):
             # proceed directly to next stage, because there is no input
-            dut.instruction.value = 0b00010
+            dut.instruction.value = 0b0010
         else:
             # hold execution due to external input
-            dut.instruction.value = 0b00001
+            dut.instruction.value = 0b0001
 
             # present all the good inputs one by one
             for idx in nz_good:
@@ -751,12 +753,12 @@ async def test_main_execution_minimal(dut):
             dut.bad_tokens_in.value = 0
 
             # release execution            
-            dut.instruction.value = 0b00010
+            dut.instruction.value = 0b0010
         
         # wait for at least one cycle
         await ClockCycles(clock, 1)
-        # then assert the instruction 0b00000 to block when re-entering input stage
-        dut.instruction.value = 0b00000
+        # then assert the instruction 0b0000 to block when re-entering input stage
+        dut.instruction.value = 0b0000
 
         timeout = True
         for i in range(1_000_000):
@@ -787,7 +789,7 @@ async def test_main_execution(dut):
     dut = dut.tb_main
     NUM_PROCESSORS = int(dut.NUM_PROCESSORS)
     NUM_CONNECTIONS = int(dut.NUM_CONNECTIONS)
-    NEW_TOKENS_BITS = int(dut.NEW_TOKENS_BITS)
+    NEW_TOKEN_BITS = int(dut.NEW_TOKEN_BITS)
     NUM_SAMPLES = 100
 
 
@@ -855,10 +857,10 @@ async def test_main_execution(dut):
 
         if (len(nz_good) == 0) and (len(nz_bad) == 0):
             # proceed directly to next stage, because there is no input
-            dut.instruction.value = 0b00010
+            dut.instruction.value = 0b0010
         else:
             # hold execution due to external input
-            dut.instruction.value = 0b00001
+            dut.instruction.value = 0b0001
 
             # present all the good inputs one by one
             for idx in nz_good:
@@ -875,12 +877,12 @@ async def test_main_execution(dut):
             dut.bad_tokens_in.value = 0
 
             # release execution            
-            dut.instruction.value = 0b00010
+            dut.instruction.value = 0b0010
         
         # wait for at least one cycle
         await ClockCycles(clock, 1)
-        # then assert the instruction 0b00000 to block when re-entering input stage
-        dut.instruction.value = 0b00000
+        # then assert the instruction 0b0000 to block when re-entering input stage
+        dut.instruction.value = 0b0000
 
         timeout = True
         for i in range(1_000_000):
@@ -895,6 +897,290 @@ async def test_main_execution(dut):
                 times[step] = get_sim_time("ns")
 
             if (dut.stage.value == 0):
+                timeout = False
+                break
+        
+        await ClockCycles(clock, 1)
+
+        assert ~timeout, "Operation timed out!"
+
+    # check if the processors started or stopped a token when expected
+    fmt=np.vectorize(lambda x: "{}{}".format(int(x[0]),int(x[1])))
+    assert np.all(all_did_startstop == all_should_startstop), "token_start does not match the reference model: {}".format(diff_string(fmt(all_did_startstop), fmt(all_should_startstop), "Step ", "Proc "))
+
+def to_n_bit_twos_complement(num, nbit):
+    if num >= 0:
+        return num & ((1 << nbit) - 1)
+    else:
+        return ((1 << nbit) + num) & ((1 << nbit) - 1)
+
+@cocotb.coroutine
+async def program_via_interface(clock, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration):
+    NUM_PROCESSORS = int(W_good.shape[0])
+    NUM_CONNECTIONS = int(dut.ttt.NUM_CONNECTIONS)
+    assert W_good.shape == W_bad.shape == (NUM_PROCESSORS, NUM_PROCESSORS), "shape of W_good and W_bad must be equal to ({}, {})".format(NUM_PROCESSORS, NUM_PROCESSORS)
+
+    # Transpose W_good and W_bad, because the hardware expects the rows to be the source and the columns to be the target
+    W_good = W_good.T
+    W_bad = W_bad.T
+
+    # get the sparse connectivity
+    has_connection = sps.csr_matrix(np.logical_or(W_good != 0, W_bad != 0))
+    assert has_connection.nnz <= NUM_CONNECTIONS, "network has {} connections, but only {} are available".format(has_connection.nnz, NUM_CONNECTIONS)
+
+    dut._log.info("programming network ...")
+
+    # wait one clock cycle for safety
+    await ClockCycles(clock, 1)
+
+    # push context
+    old_ui_in = dut.ui_in.value
+    old_uio_in = dut.uio_in.value
+    old_ena = dut.ena.value
+    old_clk = dut.clk.value
+    old_rst_n = dut.rst_n.value
+
+    dut.rst_n.value = 1
+
+    # program in all the weights
+
+    # write all processor-indexed data
+    for i in range(NUM_PROCESSORS+1):
+        if i < NUM_PROCESSORS:
+            # write duration
+            dut.ui_in.value = (0b1001 << 4) | to_n_bit_twos_complement(i, 4)
+            dut.uio_in.value = int(duration[i])
+            await ClockCycles(clock, 1)
+
+            # write good token threshold
+            dut.ui_in.value = (0b1010 << 4) | to_n_bit_twos_complement(i, 4)
+            dut.uio_in.value = int(goodTokensThreshold[i])
+            await ClockCycles(clock, 1)
+
+            # write bad token threshold
+            dut.ui_in.value = (0b1011 << 4) | to_n_bit_twos_complement(i, 4)
+            dut.uio_in.value = int(badTokensThreshold[i])
+            await ClockCycles(clock, 1)
+
+        # write indptr for processor i
+        dut.ui_in.value = (0b1110 << 4) | to_n_bit_twos_complement(i, 4)
+        dut.uio_in.value = int(has_connection.indptr[i])
+        await ClockCycles(clock, 1)
+        #print(dut.ui_in.value.binstr, dut.uio_in.value.integer, int(has_connection.indptr[i]))
+
+    # write all connection-indexed data
+    for i,(frm,to) in enumerate(zip(has_connection.indptr[:-1], has_connection.indptr[1:])):
+        for j in range(frm, to):
+            # set connection id
+            dut.uio_in.value = j
+
+            # write index
+            dut.ui_in.value = (0b1111 << 4) | to_n_bit_twos_complement(int(has_connection.indices[j]), 4)
+            await ClockCycles(clock, 1)
+
+            # write good token weight
+            dut.ui_in.value = (0b1100 << 4) | to_n_bit_twos_complement(int(W_good[i,has_connection.indices[j]]), 4)
+            await ClockCycles(clock, 1)
+
+            # write bad token weight
+            dut.ui_in.value = (0b1101 << 4) | to_n_bit_twos_complement(int(W_bad[i,has_connection.indices[j]]), 4)
+            await ClockCycles(clock, 1)
+
+    # pop context
+    dut.ui_in.value = old_ui_in
+    dut.uio_in.value = old_uio_in
+    dut.ena.value = old_ena
+    dut.clk.value = old_clk
+    dut.rst_n.value = old_rst_n
+
+    # wait one clock cycle for safety
+    await ClockCycles(clock, 1)
+
+
+@cocotb.test()
+async def test_ticktocktoken_programming(dut):
+    dut = dut.tb_ticktocktokens
+    NUM_PROCESSORS = int(dut.ttt.NUM_PROCESSORS)
+    NUM_CONNECTIONS = int(dut.ttt.NUM_CONNECTIONS)
+    assert NUM_PROCESSORS > 0, "NUM_PROCESSORS must be greater than 0"
+    assert NUM_CONNECTIONS > 0, "NUM_CONNECTIONS must be greater than 0"
+
+    NUM_SAMPLES = 100
+
+    dut._log.info("start")
+    cocotb.start_soon(Clock(dut.clk, 20, units="ns").start())
+    clock = dut.clk
+
+    await ClockCycles(clock, 3)
+    dut.rst_n.value = 0
+    # reset every neuron
+    for i in range(NUM_PROCESSORS):
+        # select the neuron with id i and wait one cycle to reset
+        dut.ui_in.value = i
+        await ClockCycles(clock, 1)
+
+    dut.rst_n.value = 1
+    await ClockCycles(clock, 1)
+
+    # generate the weights
+    while True:
+        W_good = np.random.poisson(0.1, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
+        W_bad = np.random.poisson(0.1, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
+        
+        has_connection = sps.csr_matrix(np.logical_or(W_good.T != 0, W_bad.T != 0))
+
+        if has_connection.nnz <= NUM_CONNECTIONS and has_connection.nnz > 10 and W_good.max() < 5 and W_bad.max() < 5:
+            break
+
+    # generate parameters
+    goodTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
+    badTokensThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
+    duration = np.random.poisson(5, (NUM_PROCESSORS,)).astype(int)
+
+    # program the simulated hardware
+    await program_via_interface(dut.clk, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+    await ClockCycles(clock, 1)
+
+    # ceck if the weights were programmed in correctly
+    _indptr = np.array([x.integer for x in reversed(dut.ttt.main.net.tgt_indptr.value)]).astype(np.uint)
+    _indices = np.array([x.integer for x in reversed(dut.ttt.main.net.tgt_indices.value)])[:_indptr[-1]].astype(np.uint)
+    _new_good_tokens = np.array([x.integer for x in reversed(dut.ttt.main.net.tgt_new_good_tokens.value)])[:_indptr[-1]].astype(int)
+    _new_bad_tokens = np.array([x.integer for x in reversed(dut.ttt.main.net.tgt_new_bad_tokens.value)])[:_indptr[-1]].astype(int)
+
+    # test if the processors were programmed correctly
+    _good_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.ttt.main.proc.good_tokens_threshold))])
+    _bad_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.ttt.main.proc.bad_tokens_threshold))])
+    _duration = np.array([x.value.integer for x in reversed(list(dut.ttt.main.proc.duration))])
+
+    row_idx,col_idx = has_connection.nonzero()
+
+    # make sure the correct values were programmed in
+    assert len(_indices) == has_connection.nnz, "number of connections does not match (observed {} != {})".format(len(_indices), has_connection.nnz)
+    assert np.all(_indptr == has_connection.indptr), "indptr not programmed correctly (observed {} != {})".format(_indptr, has_connection.indptr)
+    assert np.all(_indices == has_connection.indices), "indices not programmed correctly (observed {} != {})".format(_indices, has_connection.indices)
+    assert np.all(_new_good_tokens == [W_good.T[r,c] for r,c in zip(row_idx,col_idx)]), "good token weights not programmed correctly (observed {} != {})".format(_new_good_tokens, [W_good.T[r,c] for r,c in zip(row_idx,col_idx)])
+    assert np.all(_new_bad_tokens == [W_bad.T[r,c] for r,c in zip(row_idx,col_idx)]), "bad token weights not programmed correctly (observed {} != {})".format(_new_bad_tokens, [W_bad.T[r,c] for r,c in zip(row_idx,col_idx)])
+
+    # make sure the correct values were programmed in
+    assert np.all(_good_tokens_threshold == goodTokensThreshold), "good token threshold not programmed correctly (observed {} != {})".format(_good_tokens_threshold, goodTokensThreshold)
+    assert np.all(_bad_tokens_threshold == badTokensThreshold), "bad token threshold not programmed correctly (observed {} != {})".format(_bad_tokens_threshold, badTokensThreshold)
+    assert np.all(_duration == duration), "duration not programmed correctly (observed {} != {}) for neuron {}".format(_duration, duration)
+
+
+@cocotb.test()
+async def test_ticktocktoken_execution(dut):
+    dut = dut.tb_ticktocktokens
+    NUM_PROCESSORS = int(dut.ttt.NUM_PROCESSORS)
+    NUM_CONNECTIONS = int(dut.ttt.NUM_CONNECTIONS)
+    assert NUM_PROCESSORS > 0, "NUM_PROCESSORS must be greater than 0"
+    assert NUM_CONNECTIONS > 0, "NUM_CONNECTIONS must be greater than 0"
+
+    NUM_SAMPLES = 100
+
+    dut._log.info("start")
+    cocotb.start_soon(Clock(dut.clk, 20, units="ns").start())
+    clock = dut.clk
+
+    await ClockCycles(clock, 3)
+    dut.rst_n.value = 0
+    # reset every neuron
+    for i in range(NUM_PROCESSORS):
+        # select the neuron with id i and wait one cycle to reset
+        dut.ui_in.value = i
+        await ClockCycles(clock, 1)
+
+    dut.rst_n.value = 1
+    await ClockCycles(clock, 1)
+
+    # generate the weights
+    while True:
+        W_good = np.random.poisson(0.1, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
+        W_bad = np.random.poisson(0.1, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
+        
+        has_connection = sps.csr_matrix(np.logical_or(W_good != 0, W_bad != 0))
+
+        if has_connection.nnz <= NUM_CONNECTIONS and has_connection.nnz > 10 and W_good.max() < 5 and W_bad.max() < 5:
+            break
+
+    # generate parameters
+    goodTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
+    badTokensThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
+    duration = np.random.poisson(5, (NUM_PROCESSORS,)).astype(int)
+
+    # program the simulated hardware
+    await program_via_interface(dut.clk, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+
+
+    # create a golden reference model
+    golden = PyTTT(goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+
+    # generate some random input
+    my_good_tokens_in = np.random.poisson(1, size=(NUM_SAMPLES, NUM_PROCESSORS)).astype(int)
+    my_bad_tokens_in = np.random.poisson(0.1, size=(NUM_SAMPLES, NUM_PROCESSORS)).astype(int)
+    # give each incoming token a lifetime of DELAY
+    PyTTT.set_expiration(my_good_tokens_in, 10)
+    PyTTT.set_expiration(my_bad_tokens_in, 10)
+
+    # run both implementations and compare the results
+    all_should_startstop = np.zeros((NUM_SAMPLES, NUM_PROCESSORS), dtype=object)
+    all_did_startstop = np.zeros((NUM_SAMPLES, NUM_PROCESSORS), dtype=object)
+    times = np.zeros((NUM_SAMPLES, ), dtype=np.int64)
+
+    for i in range(NUM_SAMPLES):
+        for j in range(NUM_PROCESSORS):
+            all_did_startstop[i,j] = (False, False)
+
+    # first, record the reference signals
+    for (step, (should_start, should_stop)) in enumerate(golden.run(my_good_tokens_in, my_bad_tokens_in)):
+        all_should_startstop[step,:] = list(zip(should_start, should_stop))
+
+    # then record our hardware implementation
+    for (step,(good_in, bad_in)) in enumerate(zip(my_good_tokens_in, my_bad_tokens_in)):
+        #print("Step {}".format(step))
+        nz = np.nonzero(np.logical_or(good_in != 0, bad_in != 0))[0]
+
+        if (len(nz) == 0):
+            # proceed directly to next stage, because there is no input
+            dut.ui_in.value = 0b00100000
+        else:
+            # hold execution due to external input
+
+            # present all the good and bad inputs one by one
+            for idx in nz:
+                dut.ui_in.value = (0b0001 << 4) | to_n_bit_twos_complement(int(idx),4)
+                dut.uio_in.value = (to_n_bit_twos_complement(int(good_in[idx]),4) << 4) | to_n_bit_twos_complement(int(bad_in[idx]),4)
+
+                await ClockCycles(clock, 1)
+
+            dut.uio_in.value = 0
+
+            # release execution            
+            dut.ui_in.value = 0b00100000
+        
+        # wait for at least one cycle
+        await ClockCycles(clock, 1)
+        # then assert the instruction 0b0000 to block when re-entering input stage
+        dut.ui_in.value = 0b00000000
+
+        timeout = True
+        for i in range(1_000_000):
+            await FallingEdge(clock)
+
+            #print(dut.stage.value, dut.output_valid.value, dut.token_startstop.value.binstr)
+
+            data_out = dut.uo_out.value
+            # unfortunately, this gets sliced wrong in cocotb, so we need to reverse everything
+            #proc_out = data_out[7:4]
+            #stsp = data_out[3:2]
+            #stat = data_out[1:0]
+            proc_out = data_out[0:3]
+            stsp = data_out[4:5]
+            stat = data_out[6:7]
+            if (stsp != 0b00):
+                all_did_startstop[step,proc_out] = tuple(map(bool, stsp))
+                times[step] = get_sim_time("ns")
+
+            if (stat.value == 0):
                 timeout = False
                 break
         

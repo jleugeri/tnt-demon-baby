@@ -10,71 +10,163 @@ module tt_um_jleugeri_ticktocktokens (
     input  wire       clk,      // clock
     input  wire       rst_n     // reset_n - low to reset
 );
+    // Instructions:
+    //  - XX--: we need to distinguish programming the processor, programming the network, and running the system (2 bit)
+    //  - 00XX: for execution mode, we need to distinguish between different commands (2 bit)
+    //    - 0000: don't advance to next stage (no-op)
+    //    - 0001: read an input signal (data: log2(NUM_PROCESSORS) + (2 or 1)x NEW_TOKEN_BITS bit))
+    //    - 0010: advance to the next stage
+    //    - 0011: (reserved)
+    //    - 01XX: (reserved)
+    //  - 1XXX: for programming mode, we need to distinguish between programming processor and network (1 bit)
+    //    - 10XX: for programming the processor, we need a 2 bit operator + data bits:
+    //      - 1000: (reserved)
+    //      - 1001: program duration  (data: log2(NUM_PROCESSORS) + DURATION_BITS bit)
+    //      - 1010: program good token threshold log2(NUM_PROCESSORS) + (data: TOKEN_BITS bit)
+    //      - 1011: programd bad token threshold log2(NUM_PROCESSORS) + (data: TOKEN_BITS bit)
+    //    - 11XX: for programming the network, we need a 3 bit operator + data bits:
+    //      - 1100: good weights (data: log2(NUM_CONNECTIONS) + NEW_TOKEN_BITS bit)
+    //      - 1101: bad weights (data: log2(NUM_CONNECTIONS) + NEW_TOKEN_BITS bit)
+    //      - 1110: indptr (data: log2(NUM_PROCESSORS) + log2(NUM_CONNECTIONS) bit)
+    //      - 1111: indices (data: log2(NUM_CONNECTIONS) + log2(NUM_PROCESSORS) bit)
+    //
+    // Assuming a system with:
+    //  - 16 processors => log2(NUM_PROCESSORS) = 4
+    //  - up to 256 connections => log2(NUM_CONNECTIONS) = 8
+    //  - up to 16 good and up to 16 bad tokens per weight => NEW_TOKEN_BITS = 4
+    //  - a total of up to 256 tokens => TOKEN_BITS = 8
+    //  - up to 256 cycles token duration => DURATION_BITS = 8
+    // we need the following amount of data for each instruction (in addition to the instruction itself):
+    //  - 0001: 4 + 2*4 = 12 bits if we write both good and bad tokens simulataneously
+    //          4 + 4 = 8 bits if we write only good or bad tokens, respectively, in one cycle
+    //  - 1001: 4 + 8 = 12 bits
+    //  - 1010: 4 + 8 = 12 bits
+    //  - 1011: 4 + 8 = 12 bits
+    //  - 1100: 8 + 4 = 12 bits
+    //  - 1101: 8 + 4 = 12 bits
+    //  - 1110: 4 + 8 = 12 bits
+    //  - 1111: 8 + 4 = 12 bits
+    //
+    // So every instruction needs 16 bit, 4 bit for the instruction and 12 bit for the data.
+    // We set all IO pins to input to accomodate this.
+    //
+    // The package format is thus:
+    //
+    // |<--    ui_in (8bit)  -->|<--    uio_in (8bit) -->|
+    // +------------+------------------------------------+
+    // |  op (4bit) |            data  (12bit)           |
+    // +------------+------------------------------------+
+    //
+    // where for each instruction, the data is interpreted as follows:
+    //    0001:     |proc (4bit)| good (4bit)| bad (4bit)| 
+    //
+    //    1001:     |proc (4bit)|    duration (8bit)     |
+    //    1010:     |proc (4bit)|   good thresh (8bit)   |
+    //    1011:     |proc (4bit)|    bad thresh (8bit)   |
+    //    1100:     |good (4bit)|  connection ID (8bit)  |
+    //    1101:     |bad (4bit) |  connection ID (8bit)  |
+    //    1110:     |proc (4bit)|  connection ID (8bit)  |
+    //    1111:     |proc (4bit)|  connection ID (8bit)  |
+    //
+    // For the output, we have the following format:
+    //
+    // +------------+-----------+
+    // |  proc ID  |st/sp | stat | 
+    // |  (4bit)   |(2bit)|(2bit)|
+    // +------------+-----------+
+    // where:
+    //  - proc ID: the ID of the processor that just fired (if any)
+    //  - st/sp: start/stop token for the processor:
+    //    - 00: no token
+    //    - 01: start token
+    //    - 10: stop token
+    //    - 11: start and stop token
+    //  - stat: status of the execution:
+    //    - 00: waiting for external signals
+    //    - 01: updating processors' internal states
+    //    - 10: checking processors for new tokens
+    //    - 11: transmitting tokens via network
 
-    localparam int NUM_PROCESSORS = 10;
-    localparam int NUM_CONNECTIONS = 50;
-    localparam int NEW_TOKENS_BITS = 4;
-    localparam int TOKENS_BITS = 8;
-    localparam int DATA_BITS = 8;
-    localparam int PROG_HEADER = 4;
-    localparam int PROG_WIDTH = 8;
+
+
+    localparam int NUM_PROCESSORS = 15;
+    localparam int NUM_CONNECTIONS = 225;
+    localparam int NEW_TOKEN_BITS = 4;
+    localparam int TOKEN_BITS = 8;
     localparam int DURATION_BITS = 8;
 
-    // get positive reset
-    wire reset = !rst_n;
-
-    logic clock_fast;
-    logic clock_slow;
-    logic hold;
-    logic [TOKENS_BITS-1:0] tokens_in;
-    logic [$clog2(NUM_PROCESSORS)-1:0] processor_id;
-    logic [PROG_HEADER-1:0] prog_header;
-    logic [PROG_WIDTH-1:0] prog_data;
+    // data I/O logic
+    logic signed [NEW_TOKEN_BITS-1:0] good_tokens_in, bad_tokens_in;
+    logic [$clog2(NUM_PROCESSORS)-1:0] processor_id,  processor_id_out;
+    logic [$clog2(NUM_CONNECTIONS)-1:0] connection_id_in;
     logic [1:0] token_startstop;
+    logic [1:0] stage;
+    logic output_valid;
 
-    logic done;
-    logic [2:0] stage;
+    // programming logic
+    logic [3:0] instruction;
+    logic [DURATION_BITS-1:0] prog_duration;
+    logic [TOKEN_BITS-1:0] prog_threshold;
+    logic [NEW_TOKEN_BITS-1:0] prog_tokens;
 
-    // set up direction of bidirectional IOs
+
+    // connect the wires
+
+    // set all programmable IO pins to input
     assign uio_oe = 8'b00000000;
-    assign uo_out[7:6] = 2'b11;
-    assign uio_out = 8'b11111111;
 
-    assign clock_fast = clk;
+    // control flow logic
+    logic reset;
+    assign reset = ~rst_n;
+
+    // for now, clock_slow = 1
+    logic clock_slow;
     assign clock_slow = 1;
-    assign hold = 1;
-    assign tokens_in = 8'b00000000;
-    assign processor_id = 4'b0000;
-    
-    assign uo_out[1:0] = token_startstop;
-    assign prog_header = uio_in[7:4];
-    assign prog_data = ui_in;
 
-    // instantiate the design
-    tt_um_jleugeri_ticktocktokens_main #(
+    // wire up inputs
+    assign instruction = ui_in[7:4];
+
+    // for execution mode
+    assign processor_id = ui_in[3:0];
+    assign good_tokens_in = uio_in[7:4];
+    assign bad_tokens_in  = uio_in[3:0];
+
+    // for programming mode
+    assign prog_tokens = ui_in[3:0];
+    assign connection_id_in = uio_in;
+    assign prog_threshold = uio_in;
+    assign prog_duration = uio_in;
+
+    // assign outputs
+    assign uo_out = {processor_id_out, token_startstop, stage};
+
+    // instantiate the main module
+    tt_um_jleugeri_ttt_main #(
         .NUM_PROCESSORS(NUM_PROCESSORS),
         .NUM_CONNECTIONS(NUM_CONNECTIONS),
-        .NEW_TOKENS_BITS(NEW_TOKENS_BITS),
-        .TOKENS_BITS(TOKENS_BITS),
-        .DATA_BITS(DATA_BITS),
-        .PROG_HEADER(PROG_HEADER),
-        .PROG_WIDTH(PROG_WIDTH),
+        .NEW_TOKEN_BITS(NEW_TOKEN_BITS),
+        .TOKEN_BITS(TOKEN_BITS),
         .DURATION_BITS(DURATION_BITS)
     ) main (
         // control flow logic
         .reset(reset),
-        .clock_fast(clock_fast),
+        .clock_fast(clk),
         .clock_slow(clock_slow),
-        .hold(hold),
-        .done(done),
+        .instruction(instruction),
         .stage(stage),
         // data I/O logic
-        .tokens_in(tokens_in),
-        .processor_id(processor_id),
+        .good_tokens_in(good_tokens_in),
+        .bad_tokens_in(bad_tokens_in),
+        .processor_id_in(processor_id),
+        .processor_id_out(processor_id_out),
         .token_startstop(token_startstop),
+        .output_valid(output_valid),
         // programming logic
-        .prog_header(prog_header),
-        .prog_data(prog_data)
+        .connection_id_in(connection_id_in),
+        .prog_tokens(prog_tokens),
+        .prog_threshold(prog_threshold),
+        .prog_duration(prog_duration)
     );
+
 
 endmodule : tt_um_jleugeri_ticktocktokens

@@ -8,11 +8,10 @@ module tb_processor_core ();
 
     // this part dumps the trace to a vcd file that can be viewed with GTKWave
 
-    localparam NEW_TOKENS_BITS = 8;
-    localparam TOKENS_BITS = 8;
+    localparam NEW_TOKEN_BITS = 8;
+    localparam TOKEN_BITS = 8;
     localparam DURATION_BITS = 8;
     localparam NUM_PROCESSORS = 10;
-    localparam PROG_WIDTH = 8;
 
     // wire up the inputs and outputs
     logic clock_fast;
@@ -20,19 +19,19 @@ module tb_processor_core ();
     logic reset;
     logic hold;
     logic [$clog2(NUM_PROCESSORS)-1:0] processor_id;
-    logic [NEW_TOKENS_BITS-1:0] new_good_tokens;
-    logic [NEW_TOKENS_BITS-1:0] new_bad_tokens;
+    logic [NEW_TOKEN_BITS-1:0] new_good_tokens;
+    logic [NEW_TOKEN_BITS-1:0] new_bad_tokens;
     logic [1:0] token_startstop;
     logic [2:0] instruction;
-    logic [PROG_WIDTH-1:0] prog_data;
+    logic [DURATION_BITS-1:0] prog_duration;
+    logic [TOKEN_BITS-1:0] prog_threshold;
 
     // instantiate just the processor core by itself
     tt_um_jleugeri_ttt_processor_core #(
-        .NEW_TOKENS_BITS(NEW_TOKENS_BITS),
-        .TOKENS_BITS(TOKENS_BITS),
+        .NEW_TOKEN_BITS(NEW_TOKEN_BITS),
+        .TOKEN_BITS(TOKEN_BITS),
         .DURATION_BITS(DURATION_BITS),
-        .NUM_PROCESSORS(NUM_PROCESSORS),
-        .PROG_WIDTH(PROG_WIDTH)
+        .NUM_PROCESSORS(NUM_PROCESSORS)
     ) proc (
         // control inputs
         .clock_fast(clock_fast),
@@ -46,7 +45,8 @@ module tb_processor_core ();
         .token_startstop(token_startstop),
         // programming inputs
         .instruction(instruction),
-        .prog_data(prog_data)
+        .prog_duration(prog_duration),
+        .prog_threshold(prog_threshold)
     );
 
 endmodule : tb_processor_core

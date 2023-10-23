@@ -1,11 +1,10 @@
 
 
 module tt_um_jleugeri_ttt_processor_core #(
-    parameter NEW_TOKENS_BITS = 4,
-    parameter TOKENS_BITS = 8,
+    parameter NEW_TOKEN_BITS = 4,
+    parameter TOKEN_BITS = 8,
     parameter DURATION_BITS = 8,
-    parameter NUM_PROCESSORS = 10,
-    parameter PROG_WIDTH = 8
+    parameter NUM_PROCESSORS = 10
 ) (
     // control inputs
     input logic clock_fast,
@@ -13,22 +12,23 @@ module tt_um_jleugeri_ttt_processor_core #(
     input logic reset,
     input logic [$clog2(NUM_PROCESSORS)-1:0] processor_id,
     // data inputs
-    input logic signed [NEW_TOKENS_BITS-1:0] new_good_tokens,
-    input logic signed [NEW_TOKENS_BITS-1:0] new_bad_tokens,
+    input logic signed [NEW_TOKEN_BITS-1:0] new_good_tokens,
+    input logic signed [NEW_TOKEN_BITS-1:0] new_bad_tokens,
     // data outputs
     output logic [1:0] token_startstop,
     // programming inputs
     input logic [2:0] instruction,
-    input logic [PROG_WIDTH-1:0] prog_data
+    input logic [DURATION_BITS-1:0] prog_duration,
+    input logic [TOKEN_BITS-1:0] prog_threshold
 );
     // parameter memory
-    logic [TOKENS_BITS-1:0] good_tokens_threshold[NUM_PROCESSORS-1:0];
-    logic [TOKENS_BITS-1:0] bad_tokens_threshold[NUM_PROCESSORS-1:0];
+    logic [TOKEN_BITS-1:0] good_tokens_threshold[NUM_PROCESSORS-1:0];
+    logic [TOKEN_BITS-1:0] bad_tokens_threshold[NUM_PROCESSORS-1:0];
     logic [DURATION_BITS-1:0] duration[NUM_PROCESSORS-1:0];
 
     // internal state variables
-    logic signed [TOKENS_BITS-1:0] good_tokens[NUM_PROCESSORS-1:0];
-    logic signed [TOKENS_BITS-1:0] bad_tokens[NUM_PROCESSORS-1:0];
+    logic signed [TOKEN_BITS-1:0] good_tokens[NUM_PROCESSORS-1:0];
+    logic signed [TOKEN_BITS-1:0] bad_tokens[NUM_PROCESSORS-1:0];
     logic [DURATION_BITS-1:0] remaining_duration[NUM_PROCESSORS-1:0];
     logic [NUM_PROCESSORS-1:0] isOn;
 
@@ -48,30 +48,15 @@ module tt_um_jleugeri_ttt_processor_core #(
                 // DO NOTHING
                 3'b000 : begin
                 end
-
-                // program the duration
-                3'b001 : begin
-                    duration[processor_id] <= prog_data;
-                end
-                // program the good tokens threshold
-                3'b010 : begin
-                    good_tokens_threshold[processor_id] <= prog_data;
-                    good_tokens[processor_id] <= -prog_data;
-                end
-                // program the bad tokens threshold
-                3'b011 : begin
-                    bad_tokens_threshold[processor_id] <= prog_data;
-                    bad_tokens[processor_id] <= -prog_data;
-                end
                 // update incoming tokens
-                3'b100 : begin 
+                3'b001 : begin 
                     // pipelining step 1: update the neuron's counter
-                    good_tokens[processor_id] <= good_tokens[processor_id] + TOKENS_BITS'(new_good_tokens);
-                    bad_tokens[processor_id] <= bad_tokens[processor_id] + TOKENS_BITS'(new_bad_tokens);
+                    good_tokens[processor_id] <= good_tokens[processor_id] + TOKEN_BITS'(new_good_tokens);
+                    bad_tokens[processor_id] <= bad_tokens[processor_id] + TOKEN_BITS'(new_bad_tokens);
                 end
 
                 // update the internal state
-                3'b101 : begin
+                3'b010 : begin
                     // pipelining step 2: check if we need to generate our own token here
                     if ( !isOn[processor_id] && ( good_tokens[processor_id] >= 0 ) && ( bad_tokens[processor_id] <= 0 ) ) begin
                         // turn on 
@@ -103,8 +88,28 @@ module tt_um_jleugeri_ttt_processor_core #(
                         token_startstop <= 2'b00;
                     end
                 end
-                // default: do nothing
-                default: begin
+
+                // reserved
+                3'b011 : begin
+                end
+
+                // reserved
+                3'b100: begin
+                end
+
+                // program the duration
+                3'b101 : begin
+                    duration[processor_id] <= prog_duration;
+                end
+                // program the good tokens threshold
+                3'b110 : begin
+                    good_tokens_threshold[processor_id] <= prog_threshold;
+                    good_tokens[processor_id] <= -prog_threshold;
+                end
+                // program the bad tokens threshold
+                3'b111 : begin
+                    bad_tokens_threshold[processor_id] <= prog_threshold;
+                    bad_tokens[processor_id] <= -prog_threshold;
                 end
             endcase
         end
