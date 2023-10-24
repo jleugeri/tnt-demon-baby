@@ -91,9 +91,9 @@ module tt_um_jleugeri_ticktocktokens (
 
     localparam int NUM_PROCESSORS = 4;
     localparam int NUM_CONNECTIONS = 12;
-    localparam int NEW_TOKEN_BITS = 2;
-    localparam int TOKEN_BITS = 5;
-    localparam int DURATION_BITS = 7;
+    localparam int NEW_TOKEN_BITS = 4;
+    localparam int TOKEN_BITS = 8;
+    localparam int DURATION_BITS = 8;
 
     // data I/O logic
     logic signed [NEW_TOKEN_BITS-1:0] good_tokens_in, bad_tokens_in;
