@@ -89,10 +89,10 @@ module tt_um_jleugeri_ticktocktokens (
 
 
 
-    localparam int NUM_PROCESSORS = 8;
-    localparam int NUM_CONNECTIONS = 32;
+    localparam int NUM_PROCESSORS = 4;
+    localparam int NUM_CONNECTIONS = 12;
     localparam int NEW_TOKEN_BITS = 2;
-    localparam int TOKEN_BITS = 7;
+    localparam int TOKEN_BITS = 5;
     localparam int DURATION_BITS = 7;
 
     // data I/O logic
