@@ -25,6 +25,11 @@ module tb_ticktocktokens ();
 
 
     tt_um_jleugeri_ticktocktokens ttt (
+        // add power for gate-level simulation
+    `ifdef GL_TEST
+        .VPWR( 1'b1),
+        .VGND( 1'b0),
+    `endif
         .ui_in(ui_in),
         .uo_out(uo_out),
         .uio_in(uio_in),

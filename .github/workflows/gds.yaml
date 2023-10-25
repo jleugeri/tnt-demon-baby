@@ -25,6 +25,9 @@ jobs:
         with:
           submodules: recursive
 
+      - name: install some dependencies
+        run: python -m pip install numpy pytest
+
       - name: GL test
         uses: TinyTapeout/tt-gds-action/gl_test@tt05
 
