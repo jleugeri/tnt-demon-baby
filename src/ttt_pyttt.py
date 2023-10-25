@@ -8,7 +8,7 @@ PyTTT = typing.NewType("PyTTT", object)
 class SerializeToDict(object):
     dontSerializeProps = []
 
-    def serialize_to_dict(self) -> dict[str,object]:
+    def serialize_to_dict(self) -> typing.Dict[str,object]:
         ret= {}
         for prop in dir(self):
             if prop == "dontSerializeProps" or prop in self.__class__.dontSerializeProps or prop.startswith("__") or callable(getattr(type(self), prop, None)):
