@@ -6,6 +6,8 @@ SIM ?= icarus
 #SIM ?= verilator
 TOPLEVEL_LANG ?= verilog
 
+TEST_SEPARATELY ?= no
+
 # flags for verilator
 ifeq ($(SIM),verilator)
 COMPILE_ARGS	+= --timing
@@ -21,7 +23,12 @@ WAVES 			 = 1
 
 # $(PWD)/tt_um_jleugeri_ttt_network.v $(PWD)/tt_um_jleugeri_ttt_respite.v 
 VERILOG_SOURCES += $(PWD)/tt_um_jleugeri_ttt_processor_core.sv $(PWD)/tt_um_jleugeri_ttt_network.sv $(PWD)/tt_um_jleugeri_ttt_main.sv $(PWD)/tt_um_jleugeri_ticktocktokens.sv
-VERILOG_SOURCES += $(PWD)/tb.sv $(PWD)/tb_processor_core.sv $(PWD)/tb_network.sv $(PWD)/tb_main.sv $(PWD)/tb_ticktocktokens.sv
+
+ifeq ($(TEST_SEPARATELY),yes)
+VERILOG_SOURCES += $(PWD)/tb_all.sv $(PWD)/tb_processor_core.sv $(PWD)/tb_network.sv $(PWD)/tb_main.sv $(PWD)/tb_ticktocktokens.sv
+else
+VERILOG_SOURCES += $(PWD)/tb_ticktocktokens.sv
+endif 
 
 else
 
@@ -30,21 +37,32 @@ COMPILE_ARGS    += -DGL_TEST
 COMPILE_ARGS    += -DFUNCTIONAL
 COMPILE_ARGS    += -DUSE_POWER_PINS
 COMPILE_ARGS    += -DSIM
-COMPILE_ARGS    += -DUNIT_DELAY=#1
-#COMPILE_ARGS	+= --timing
+COMPILE_ARGS    += -DUNIT_DELAY=\#1
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 
 # this gets copied in by the GDS action workflow
-VERILOG_SOURCES += $(PWD)/tt_um_jleugeri_ttt_processor_core.sv $(PWD)/tt_um_jleugeri_ttt_network.sv $(PWD)/tt_um_jleugeri_ttt_main.sv $(PWD)/tt_um_jleugeri_ticktocktokens.sv
-VERILOG_SOURCES += $(PWD)/tb.sv $(PWD)/tb_processor_core.sv $(PWD)/tb_network.sv $(PWD)/tb_main.sv $(PWD)/tb_ticktocktokens.sv $(PWD)/gate_level_netlist.sv
+ifeq ($(TEST_SEPARATELY),yes)
+VERILOG_SOURCES += $(PWD)/tb_all.sv $(PWD)/tb_processor_core.sv $(PWD)/tb_network.sv $(PWD)/tb_main.sv $(PWD)/tb_ticktocktokens.sv
+else
+VERILOG_SOURCES += $(PWD)/tb_ticktocktokens.sv
+endif 
+
+VERILOG_SOURCES += $(PWD)/gate_level_netlist.v
+
 endif
 
 # TOPLEVEL is the name of the toplevel module in your Verilog or VHDL file
-TOPLEVEL = tb
-
+ifeq ($(TEST_SEPARATELY),yes)
+TOPLEVEL = tb_all
+# MODULE is the basename of the Python test file
+MODULE = test_separately
+else
+TOPLEVEL = tb_ticktocktokens
 # MODULE is the basename of the Python test file
 MODULE = test
+endif 
+
 
 # include cocotb's make rules to take care of the simulator setup
 include $(shell cocotb-config --makefiles)/Makefile.sim

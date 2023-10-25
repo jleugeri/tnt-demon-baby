@@ -7,12 +7,12 @@ that can be driven / tested by the cocotb test.py
 */
 
 // testbench is controlled by test.py
-module tb ();
+module tb_all ();
 
     // this part dumps the trace to a vcd file that can be viewed with GTKWave
     initial begin
         //$dumpfile ("tb.vcd");
-        $dumpvars (0, tb);
+        $dumpvars (0, tb_all);
         #1;
     end
 
@@ -22,4 +22,4 @@ module tb ();
     tb_main tb_main();
     tb_ticktocktokens tb_ticktocktokens();
 
-endmodule : tb
+endmodule : tb_all
