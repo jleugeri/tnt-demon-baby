@@ -25,6 +25,7 @@ module tt_um_jleugeri_ttt_main #(
     input logic [TOKEN_BITS-1:0] prog_threshold,
     input logic [NEW_TOKEN_BITS-1:0] prog_tokens
 );
+    localparam logic [$clog2(NUM_PROCESSORS)-1:0] MAX_PROCESSOR_ID_SHORT = ($clog2(NUM_PROCESSORS))'(NUM_PROCESSORS-1);
     localparam logic [$clog2(NUM_PROCESSORS+1)-1:0] MAX_PROCESSOR_ID_PLUS_ONE = ($clog2(NUM_PROCESSORS+1))'(NUM_PROCESSORS);
     localparam logic [$clog2(NUM_PROCESSORS+1)-1:0] MAX_PROCESSOR_ID = ($clog2(NUM_PROCESSORS+1))'(NUM_PROCESSORS-1);
 
@@ -32,7 +33,7 @@ module tt_um_jleugeri_ttt_main #(
     logic network_done;
     logic network_valid;
     logic [2:0] instruction_net;
-    logic [2:0]  instruction_proc;
+    logic [2:0] instruction_proc;
 
     logic [DURATION_BITS-1:0] proc_prog_duration;
     logic [TOKEN_BITS-1:0] proc_prog_threshold;
@@ -56,6 +57,7 @@ module tt_um_jleugeri_ttt_main #(
     logic [$clog2(NUM_PROCESSORS)-1:0] processor_id;
     logic [$clog2(NUM_PROCESSORS+1)-1:0] processor_id_internal, processor_id_internal_prev;
 
+    logic reset_internal;
 
     // instantiate the network
     tt_um_jleugeri_ttt_network #(
@@ -65,7 +67,7 @@ module tt_um_jleugeri_ttt_main #(
     ) net (
         // control inputs / outputs
         .clk(clock_fast),
-        .reset(reset),
+        .reset(reset_internal),
         .processor_id(source_id),
         .connection_id(connection_id),
         .done(network_done),
@@ -92,7 +94,7 @@ module tt_um_jleugeri_ttt_main #(
         // control inputs
         .clock_fast(clock_fast),
         .clock_slow(clock_slow),
-        .reset(reset),
+        .reset(reset_internal),
         .processor_id(processor_id),
         // data inputs
         .new_good_tokens(proc_new_good_tokens),
@@ -109,8 +111,34 @@ module tt_um_jleugeri_ttt_main #(
 
     always_ff @( posedge clock_fast ) begin
         if (reset) begin
-            // next stage should be INPUT
-            stage <= 2'b00;
+            processor_id_out <= 0;
+            token_startstop <= 2'b00;
+            output_valid <= 0;
+            instruction_net <= 3'b000;
+            instruction_proc <= 3'b000;
+            processor_id <= 0;
+            proc_prog_threshold <= 0;
+            proc_prog_duration <= 0;
+            net_prog_tokens <= 0;
+            source_id <= 0;
+            connection_id <= 0;
+            proc_new_good_tokens <= 0;
+            proc_new_bad_tokens <= 0;
+
+            reset_internal <= 1;
+            // set intial stage to busy iterating processors
+            stage <= 2'b01;
+        end
+        else if (reset_internal) begin
+            // reset all processor states
+            if (processor_id == MAX_PROCESSOR_ID_SHORT) begin
+                reset_internal <= 0;
+                // next stage should be INPUT
+                stage <= 2'b00;
+            end
+            else begin
+                processor_id <= processor_id + 1;
+            end
         end
         else begin
             // if the MSB of instruction is high, we are in the programming mode

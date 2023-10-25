@@ -2,16 +2,23 @@
 # See https://docs.cocotb.org/en/stable/quickstart.html for more info
 
 # defaults
-SIM ?= verilator
+SIM ?= icarus 
+#SIM ?= verilator
 TOPLEVEL_LANG ?= verilog
+
+# flags for verilator
+ifeq ($(SIM),verilator)
+COMPILE_ARGS	+= --timing
+EXTRA_ARGS 		+= --trace --trace-structs
+endif
 
 # normal simulation
 ifneq ($(GATES),yes)
 
 # this is the only part you should need to modify:
 WAVES 			 = 1
-COMPILE_ARGS	+= --timing
-EXTRA_ARGS 		+= --trace --trace-structs
+
+
 # $(PWD)/tt_um_jleugeri_ttt_network.v $(PWD)/tt_um_jleugeri_ttt_respite.v 
 VERILOG_SOURCES += $(PWD)/tt_um_jleugeri_ttt_processor_core.sv $(PWD)/tt_um_jleugeri_ttt_network.sv $(PWD)/tt_um_jleugeri_ttt_main.sv $(PWD)/tt_um_jleugeri_ticktocktokens.sv
 VERILOG_SOURCES += $(PWD)/tb.sv $(PWD)/tb_processor_core.sv $(PWD)/tb_network.sv $(PWD)/tb_main.sv $(PWD)/tb_ticktocktokens.sv
@@ -24,7 +31,7 @@ COMPILE_ARGS    += -DFUNCTIONAL
 COMPILE_ARGS    += -DUSE_POWER_PINS
 COMPILE_ARGS    += -DSIM
 COMPILE_ARGS    += -DUNIT_DELAY=#1
-COMPILE_ARGS	+= --timing
+#COMPILE_ARGS	+= --timing
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/primitives.v
 VERILOG_SOURCES += $(PDK_ROOT)/sky130A/libs.ref/sky130_fd_sc_hd/verilog/sky130_fd_sc_hd.v
 

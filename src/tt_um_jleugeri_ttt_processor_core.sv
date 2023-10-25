@@ -40,6 +40,7 @@ module tt_um_jleugeri_ttt_processor_core #(
             good_tokens[processor_id] <= -good_tokens_threshold[processor_id];
             isOn[processor_id] <= 0;
             remaining_duration[processor_id] <= 0;
+            token_startstop <= 2'b00;
         end
         // otherwise, perform an action (either programming or running the processor)
         else begin

@@ -17,7 +17,6 @@ module tb_processor_core ();
     logic clock_fast;
     logic clock_slow;
     logic reset;
-    logic hold;
     logic [$clog2(NUM_PROCESSORS)-1:0] processor_id;
     logic [NEW_TOKEN_BITS-1:0] new_good_tokens;
     logic [NEW_TOKEN_BITS-1:0] new_bad_tokens;
@@ -25,6 +24,18 @@ module tb_processor_core ();
     logic [2:0] instruction;
     logic [DURATION_BITS-1:0] prog_duration;
     logic [TOKEN_BITS-1:0] prog_threshold;
+
+    initial begin
+        clock_fast = 0;
+        clock_slow = 0;
+        reset = 0;
+        processor_id = 0;
+        new_good_tokens = 0;
+        new_bad_tokens = 0;
+        instruction = 0;
+        prog_duration = 0;
+        prog_threshold = 0;
+    end
 
     // instantiate just the processor core by itself
     tt_um_jleugeri_ttt_processor_core #(

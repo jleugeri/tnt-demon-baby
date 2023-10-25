@@ -89,14 +89,7 @@ async def program_processor(clock, dut, goodTokenThreshold: np.ndarray, badToken
 
     dut._log.info("programming cores ...")
 
-    # push context
-    old_reset = dut.reset.value
-    old_processor_id = dut.processor_id.value
-    old_instruction = dut.instruction.value
-    old_prog_duration = dut.prog_duration.value
-    old_prog_threshold = dut.prog_threshold.value
-
-    dut.reset.value = 0
+    assert dut.reset.value == 0, "reset must be low before programming"
 
     for i in range(NUM_PROCESSORS):
         # select the neuron with id i
@@ -117,18 +110,18 @@ async def program_processor(clock, dut, goodTokenThreshold: np.ndarray, badToken
         dut.prog_threshold.value = int(badTokenThreshold[i])
         await ClockCycles(clock, 1)
     
+    dut.instruction.value = 0b000
+    dut.prog_threshold.value = 0
+    dut.prog_duration.value = 0
+    dut.processor_id.value = 0
     await ClockCycles(clock, 1)
-    #pop context
-    dut.processor_id.value = old_processor_id
-    dut.instruction.value = old_instruction
-    dut.prog_duration.value = old_prog_duration
-    dut.prog_threshold.value = old_prog_threshold
-    dut.reset.value = old_reset
 
 async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, prefix = 1):
     NUM_PROCESSORS = int(W_good.shape[0])
     NUM_CONNECTIONS = int(dut.NUM_CONNECTIONS)
     assert W_good.shape == W_bad.shape == (NUM_PROCESSORS, NUM_PROCESSORS), "shape of W_good and W_bad must be equal to ({}, {})".format(NUM_PROCESSORS, NUM_PROCESSORS)
+
+    assert dut.reset.value == 0, "reset must be low before programming"
 
     # Transpose W_good and W_bad, because the hardware expects the rows to be the source and the columns to be the target
     W_good = W_good.T
@@ -142,15 +135,6 @@ async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, pre
 
     # wait one clock cycle for safety
     await ClockCycles(clock, 1)
-
-    # push context
-    old_reset = dut.reset.value
-    old_processor_id = dut.processor_id.value
-    old_connection_id = dut.connection_id.value
-    old_instruction = dut.instruction.value
-    old_prog_tokens = dut.prog_tokens.value
-
-    dut.reset.value = 0
 
     # write all indptrs
     dut.instruction.value = 0b10 | (prefix << 2)
@@ -183,14 +167,11 @@ async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, pre
             dut.prog_tokens.value = int(W_bad[i,has_connection.indices[j]])
             await ClockCycles(clock, 1)
 
-    # pop context
-    dut.processor_id.value = old_processor_id
-    dut.connection_id.value = old_connection_id
-    dut.instruction.value = old_instruction
-    dut.prog_tokens.value = old_prog_tokens
-    dut.reset.value = old_reset
-
-    # wait one clock cycle for safety
+    dut.instruction.value = 0b000
+    dut.prog_tokens.value = 0
+    dut.processor_id.value = 0
+    dut.connection_id.value = 0
+    dut.prog_tokens.value = 0
     await ClockCycles(clock, 1)
 
 
@@ -246,8 +227,14 @@ async def test_core_programming(dut):
     dut._log.info("start")
     cocotb.start_soon(Clock(dut.clock_fast, 20, units="ns").start())
     clock = dut.clock_fast
-
     await ClockCycles(clock, 3)
+
+    # Reset processor
+    dut.reset.value = 1
+    await ClockCycles(clock, 1)
+    dut.reset.value = 0
+    await ClockCycles(clock, 1)
+
 
     goodTokenThreshold = np.zeros((NUM_PROCESSORS,),dtype=int)+THRESHOLD
     badTokenThreshold = np.zeros((NUM_PROCESSORS,),dtype=int)+THRESHOLD
@@ -409,6 +396,13 @@ async def test_core_against_golden_model_without_weights(dut):
     # check if the processors started or stopped a token when expected
     assert np.all(all_did_startstop == all_should_startstop), "token_start does not match the reference model: {}".format(diff_string(all_did_startstop, all_should_startstop, "Step ", "Proc "))
 
+def parse_verilog_array(varray, s=slice(None)):
+    if s == slice(None):
+        s = slice(0, len(varray), 1)
+
+    idx = range(s.start, s.stop, s.step)
+    return np.array([varray[i].value.integer for i in idx])
+
 @cocotb.test()
 async def test_network_programming(dut):
     dut = dut.tb_network
@@ -443,10 +437,14 @@ async def test_network_programming(dut):
     await program_network(clock, dut, W_good, W_bad)
 
     # ceck if the weights were programmed in correctly
-    _indptr = np.array([x.integer for x in reversed(dut.net.tgt_indptr.value)]).astype(np.uint)
-    _indices = np.array([x.integer for x in reversed(dut.net.tgt_indices.value)])[:_indptr[-1]].astype(np.uint)
-    _new_good_tokens = np.array([x.integer for x in reversed(dut.net.tgt_new_good_tokens.value)])[:_indptr[-1]].astype(int)
-    _new_bad_tokens = np.array([x.integer for x in reversed(dut.net.tgt_new_bad_tokens.value)])[:_indptr[-1]].astype(int)
+    #_indptr = np.array([x.integer for x in reversed(dut.net.tgt_indptr.value)]).astype(np.uint)
+    #_indices = np.array([x.integer for x in reversed(dut.net.tgt_indices.value[:_indptr[-1]])]).astype(np.uint)
+    #_new_good_tokens = np.array([x.integer for x in reversed(dut.net.tgt_new_good_tokens.value[:_indptr[-1]])]).astype(int)
+    #_new_bad_tokens = np.array([x.integer for x in reversed(dut.net.tgt_new_bad_tokens.value[:_indptr[-1]])]).astype(int)
+    _indptr = parse_verilog_array(dut.net.tgt_indptr)
+    _indices = parse_verilog_array(dut.net.tgt_indices, slice(0, _indptr[-1], 1))
+    _new_good_tokens = parse_verilog_array(dut.net.tgt_new_good_tokens, slice(0, _indptr[-1], 1))
+    _new_bad_tokens = parse_verilog_array(dut.net.tgt_new_bad_tokens, slice(0, _indptr[-1], 1))
 
     row_idx,col_idx = has_connection.nonzero()
 
@@ -488,9 +486,11 @@ async def test_network_cycle(dut):
     await program_network(clock, dut, W_good, W_bad)
     await ClockCycles(clock, 3)
 
-    # ceck if the weights were programmed in correctly
-    _indptr = np.array([x.integer for x in reversed(dut.net.tgt_indptr.value)]).astype(np.uint)
-    _indices = np.array([x.integer for x in reversed(dut.net.tgt_indices.value)])[:_indptr[-1]].astype(np.uint)
+    # check if the weights were programmed in correctly
+    #_indptr = np.array([x.integer for x in reversed(dut.net.tgt_indptr.value)]).astype(np.uint)
+    #_indices = np.array([x.integer for x in reversed(dut.net.tgt_indices.value)])[:_indptr[-1]].astype(np.uint)
+    _indptr = parse_verilog_array(dut.net.tgt_indptr)
+    _indices = parse_verilog_array(dut.net.tgt_indices, slice(0, _indptr[-1], 1))
 
     did_done = []
     should_done = []
@@ -577,11 +577,21 @@ async def test_main_core_programming(dut):
     cocotb.start_soon(Clock(dut.clock_fast, 20, units="ns").start())
     clock = dut.clock_fast
 
-    # reset
+    await ClockCycles(clock, 3)
     dut.reset.value = 1
-    await ClockCycles(clock, 3)
+    await ClockCycles(clock, 1)
     dut.reset.value = 0
-    await ClockCycles(clock, 3)
+
+    # reset every neuron
+    timeout = True
+    for i in range(1_000_000):
+        await ClockCycles(clock, 1)
+
+        if(dut.stage.value == 0b00):
+            timeout = False
+            break
+
+    assert not timeout, "timeout while resetting"
 
     # generate parameters
     goodTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
@@ -594,9 +604,9 @@ async def test_main_core_programming(dut):
     await ClockCycles(clock, 1)
 
     # test if the processors were programmed correctly
-    _good_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.main.proc.good_tokens_threshold))])
-    _bad_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.main.proc.bad_tokens_threshold))])
-    _duration = np.array([x.value.integer for x in reversed(list(dut.main.proc.duration))])
+    _good_tokens_threshold = parse_verilog_array(dut.main.proc.good_tokens_threshold)
+    _bad_tokens_threshold = parse_verilog_array(dut.main.proc.bad_tokens_threshold)
+    _duration = parse_verilog_array(dut.main.proc.duration)
 
     # make sure the correct values were programmed in
     assert np.all(_good_tokens_threshold == goodTokensThreshold), "good token threshold not programmed correctly (observed {} != {})".format(_good_tokens_threshold, goodTokensThreshold)
@@ -618,11 +628,21 @@ async def test_main_network_programming(dut):
     cocotb.start_soon(Clock(dut.clock_fast, 20, units="ns").start())
     clock = dut.clock_fast
 
-    # reset
+    await ClockCycles(clock, 3)
     dut.reset.value = 1
-    await ClockCycles(clock, 3)
+    await ClockCycles(clock, 1)
     dut.reset.value = 0
-    await ClockCycles(clock, 3)
+
+    # reset every neuron
+    timeout = True
+    for i in range(1_000_000):
+        await ClockCycles(clock, 1)
+
+        if(dut.stage.value == 0b00):
+            timeout = False
+            break
+
+    assert not timeout, "timeout while resetting"
 
     # generate the weights
     while True:
@@ -640,10 +660,10 @@ async def test_main_network_programming(dut):
     await ClockCycles(clock, 1)
 
     # ceck if the weights were programmed in correctly
-    _indptr = np.array([x.integer for x in reversed(dut.main.net.tgt_indptr.value)]).astype(np.uint)
-    _indices = np.array([x.integer for x in reversed(dut.main.net.tgt_indices.value)])[:_indptr[-1]].astype(np.uint)
-    _new_good_tokens = np.array([x.integer for x in reversed(dut.main.net.tgt_new_good_tokens.value)])[:_indptr[-1]].astype(int)
-    _new_bad_tokens = np.array([x.integer for x in reversed(dut.main.net.tgt_new_bad_tokens.value)])[:_indptr[-1]].astype(int)
+    _indptr = parse_verilog_array(dut.main.net.tgt_indptr)
+    _indices = parse_verilog_array(dut.main.net.tgt_indices, slice(0, _indptr[-1], 1))
+    _new_good_tokens = parse_verilog_array(dut.main.net.tgt_new_good_tokens, slice(0, _indptr[-1], 1))
+    _new_bad_tokens = parse_verilog_array(dut.main.net.tgt_new_bad_tokens, slice(0, _indptr[-1], 1))
 
     row_idx,col_idx = has_connection.nonzero()
 
@@ -671,14 +691,19 @@ async def test_main_execution_minimal(dut):
 
     await ClockCycles(clock, 3)
     dut.reset.value = 1
+    await ClockCycles(clock, 1)
+    dut.reset.value = 0
+
     # reset every neuron
-    for i in range(NUM_PROCESSORS):
-        # select the neuron with id i and wait one cycle to reset
-        dut.processor_id.value = i
+    timeout = True
+    for i in range(1_000_000):
         await ClockCycles(clock, 1)
 
-    dut.reset.value = 0
-    await ClockCycles(clock, 1)
+        if(dut.stage.value == 0b00):
+            timeout = False
+            break
+
+    assert not timeout, "timeout while resetting"
 
     # generate the weights
     W_good = np.zeros((NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
@@ -796,13 +821,19 @@ async def test_main_execution(dut):
 
     await ClockCycles(clock, 3)
     dut.reset.value = 1
+    await ClockCycles(clock, 1)
+    dut.reset.value = 0
+
     # reset every neuron
-    for i in range(NUM_PROCESSORS):
-        # select the neuron with id i and wait one cycle to reset
-        dut.processor_id.value = i
+    timeout = True
+    for i in range(1_000_000):
         await ClockCycles(clock, 1)
 
-    dut.reset.value = 0
+        if(dut.stage.value == 0b00):
+            timeout = False
+            break
+
+    assert not timeout, "timeout while resetting"
     await ClockCycles(clock, 1)
 
     # generate the weights
@@ -1008,14 +1039,19 @@ async def test_ticktocktoken_programming(dut):
 
     await ClockCycles(clock, 3)
     dut.rst_n.value = 0
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 1
+
     # reset every neuron
-    for i in range(NUM_PROCESSORS):
-        # select the neuron with id i and wait one cycle to reset
-        dut.ui_in.value = i
+    timeout = True
+    for i in range(1_000_000):
         await ClockCycles(clock, 1)
 
-    dut.rst_n.value = 1
-    await ClockCycles(clock, 1)
+        if(dut.uo_out.value[6:7] == 0b00):
+            timeout = False
+            break
+
+    assert not timeout, "timeout while resetting"
 
     # generate the weights
     while True:
@@ -1036,16 +1072,16 @@ async def test_ticktocktoken_programming(dut):
     await program_via_interface(dut.clk, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
     await ClockCycles(clock, 1)
 
-    # ceck if the weights were programmed in correctly
-    _indptr = np.array([x.integer for x in reversed(dut.ttt.main.net.tgt_indptr.value)]).astype(np.uint)
-    _indices = np.array([x.integer for x in reversed(dut.ttt.main.net.tgt_indices.value)])[:_indptr[-1]].astype(np.uint)
-    _new_good_tokens = np.array([x.integer for x in reversed(dut.ttt.main.net.tgt_new_good_tokens.value)])[:_indptr[-1]].astype(int)
-    _new_bad_tokens = np.array([x.integer for x in reversed(dut.ttt.main.net.tgt_new_bad_tokens.value)])[:_indptr[-1]].astype(int)
-
+    # check if the weights were programmed in correctly
+    _indptr = parse_verilog_array(dut.ttt.main.net.tgt_indptr)
+    _indices = parse_verilog_array(dut.ttt.main.net.tgt_indices, slice(0, _indptr[-1], 1))
+    _new_good_tokens = parse_verilog_array(dut.ttt.main.net.tgt_new_good_tokens, slice(0, _indptr[-1], 1))
+    _new_bad_tokens = parse_verilog_array(dut.ttt.main.net.tgt_new_bad_tokens, slice(0, _indptr[-1], 1))
+    
     # test if the processors were programmed correctly
-    _good_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.ttt.main.proc.good_tokens_threshold))])
-    _bad_tokens_threshold = np.array([x.value.integer for x in reversed(list(dut.ttt.main.proc.bad_tokens_threshold))])
-    _duration = np.array([x.value.integer for x in reversed(list(dut.ttt.main.proc.duration))])
+    _good_tokens_threshold = parse_verilog_array(dut.ttt.main.proc.good_tokens_threshold)
+    _bad_tokens_threshold = parse_verilog_array(dut.ttt.main.proc.bad_tokens_threshold)
+    _duration = parse_verilog_array(dut.ttt.main.proc.duration)
 
     row_idx,col_idx = has_connection.nonzero()
 
@@ -1078,13 +1114,19 @@ async def test_ticktocktoken_execution(dut):
 
     await ClockCycles(clock, 3)
     dut.rst_n.value = 0
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 1
+
     # reset every neuron
-    for i in range(NUM_PROCESSORS):
-        # select the neuron with id i and wait one cycle to reset
-        dut.ui_in.value = i
+    timeout = True
+    for i in range(1_000_000):
         await ClockCycles(clock, 1)
 
-    dut.rst_n.value = 1
+        if(dut.uo_out.value[6:7] == 0b00):
+            timeout = False
+            break
+
+    assert not timeout, "timeout while resetting"
     await ClockCycles(clock, 1)
 
     # generate the weights
@@ -1092,6 +1134,10 @@ async def test_ticktocktoken_execution(dut):
         W_good = np.random.poisson(0.1, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
         W_bad = np.random.poisson(0.1, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
         
+        # make sure the first processor has outgoing connections
+        W_good[1 % NUM_PROCESSORS,0] = 1
+        W_bad[2 % NUM_PROCESSORS,0] = 1
+
         has_connection = sps.csr_matrix(np.logical_or(W_good != 0, W_bad != 0))
 
         if has_connection.nnz <= NUM_CONNECTIONS and has_connection.nnz > 10 and W_good.max() < 5 and W_bad.max() < 5:
@@ -1101,6 +1147,11 @@ async def test_ticktocktoken_execution(dut):
     goodTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
     badTokensThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
     duration = np.random.poisson(5, (NUM_PROCESSORS,)).astype(int)
+
+    # make sure that processor 0, which is written first, is excitable
+    goodTokensThreshold[0] = 1
+    badTokensThreshold[0] = 1
+    duration[0] = 2
 
     # program the simulated hardware
     await program_via_interface(dut.clk, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
@@ -1112,6 +1163,11 @@ async def test_ticktocktoken_execution(dut):
     # generate some random input
     my_good_tokens_in = np.random.poisson(1, size=(NUM_SAMPLES, NUM_PROCESSORS)).astype(int)
     my_bad_tokens_in = np.random.poisson(0.1, size=(NUM_SAMPLES, NUM_PROCESSORS)).astype(int)
+
+    # make sure the first processor fires in the first step
+    my_good_tokens_in[0,0] = 1
+    my_bad_tokens_in[0,0] = 0
+
     # give each incoming token a lifetime of DELAY
     PyTTT.set_expiration(my_good_tokens_in, 10)
     PyTTT.set_expiration(my_bad_tokens_in, 10)
@@ -1128,6 +1184,8 @@ async def test_ticktocktoken_execution(dut):
     # first, record the reference signals
     for (step, (should_start, should_stop)) in enumerate(golden.run(my_good_tokens_in, my_bad_tokens_in)):
         all_should_startstop[step,:] = list(zip(should_start, should_stop))
+
+    assert all_should_startstop[0,0] == (True, False), "first processor did not start in first step, but we programmed it to do so!"
 
     # then record our hardware implementation
     for (step,(good_in, bad_in)) in enumerate(zip(my_good_tokens_in, my_bad_tokens_in)):

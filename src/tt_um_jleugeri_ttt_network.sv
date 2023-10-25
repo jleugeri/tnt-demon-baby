@@ -34,12 +34,15 @@ module tt_um_jleugeri_ttt_network #(
 
     // memory address counters
 
-
-    logic looping;
-
     always_ff @( posedge clk ) begin
         if (reset) begin
-            looping <= 0;
+            done <= 0;
+            valid <= 0;
+            target_id <= 0;
+            new_good_tokens <= 0;
+            new_bad_tokens <= 0;
+            tgt_addr <= 0;
+            end_addr <= 0;
         end 
         else begin
             case (instruction)

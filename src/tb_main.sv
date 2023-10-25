@@ -23,6 +23,20 @@ module tb_main();
     logic [NEW_TOKEN_BITS-1:0] prog_tokens;
     logic [TOKEN_BITS-1:0] prog_threshold;
 
+    initial begin
+        reset = 1'b0;
+        clock_fast = 1'b0;
+        clock_slow = 1'b0;
+        good_tokens_in = 0;
+        bad_tokens_in = 0;
+        processor_id = 0;
+        connection_id = 0;
+        instruction = 4'b0000;
+        prog_duration = 0;
+        prog_tokens = 0;
+        prog_threshold = 0;
+    end
+
 
     // instantiate the main module
     tt_um_jleugeri_ttt_main #(

@@ -21,6 +21,15 @@ module tb_network();
     logic [2:0] instruction;
     logic [NEW_TOKEN_BITS-1:0] prog_tokens;
 
+    initial begin
+        clk = 0;
+        reset = 0;
+        processor_id = 0;
+        connection_id = 0;
+        instruction = 0;
+        prog_tokens = 0;
+    end
+
     // instantiate the connections
     tt_um_jleugeri_ttt_network #(
         .NUM_PROCESSORS(10),
