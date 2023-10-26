@@ -81,8 +81,8 @@ module tt_um_jleugeri_ticktocktokens (
     // data I/O logic
     // breaking out the single "token input" signal into good and bad tokens, respectively, based on the MSB
     logic signed [NEW_TOKEN_BITS-1:0] good_tokens_in, bad_tokens_in;
-    assign good_tokens_in = uio_in[NEW_TOKEN_BITS] ? NEW_TOKEN_BITS'(1'b0) : uio_in[NEW_TOKEN_BITS-1:0];
-    assign bad_tokens_in  = uio_in[NEW_TOKEN_BITS] ? NEW_TOKEN_BITS'(1'b0) : uio_in[NEW_TOKEN_BITS-1:0];
+    assign good_tokens_in = uio_in[NEW_TOKEN_BITS-1] ? NEW_TOKEN_BITS'(1'b0) : uio_in[NEW_TOKEN_BITS-1:0];
+    assign bad_tokens_in  = uio_in[NEW_TOKEN_BITS-1] ? NEW_TOKEN_BITS'(1'b0) : uio_in[NEW_TOKEN_BITS-1:0];
 
     // combine the output signals
     logic token_start, token_stop, token_valid, expect_data;
