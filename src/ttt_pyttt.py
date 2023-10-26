@@ -126,21 +126,21 @@ class ProcessorInfo(SerializeToDict):
         key: int
 
         @property
-        def goodTokensThreshold(self) -> int:
-            return self.procs.goodTokensThreshold[self.key]
+        def goodTokenThreshold(self) -> int:
+            return self.procs.goodTokenThreshold[self.key]
         
-        @goodTokensThreshold.setter
-        def goodTokensThreshold(self, val) -> ():
-            self.procs.goodTokensThreshold[self.key] = val
+        @goodTokenThreshold.setter
+        def goodTokenThreshold(self, val) -> ():
+            self.procs.goodTokenThreshold[self.key] = val
         
 
         @property
-        def badTokensThreshold(self) -> int:
-            return self.procs.badTokensThreshold[self.key]
+        def badTokenThreshold(self) -> int:
+            return self.procs.badTokenThreshold[self.key]
         
-        @badTokensThreshold.setter
-        def badTokensThreshold(self, val) -> ():
-            self.procs.badTokensThreshold[self.key] = val
+        @badTokenThreshold.setter
+        def badTokenThreshold(self, val) -> ():
+            self.procs.badTokenThreshold[self.key] = val
         
 
         @property
@@ -152,7 +152,7 @@ class ProcessorInfo(SerializeToDict):
             self.procs.duration[self.key] = val
 
         def __repr__(self):
-            return "\n    goodTokensThreshold: {}\n    badTokensThreshold: {}\n    duration: {}\n".format(self.goodTokensThreshold, self.badTokensThreshold, self.duration)
+            return "\n    goodTokenThreshold: {}\n    badTokenThreshold: {}\n    duration: {}\n".format(self.goodTokenThreshold, self.badTokenThreshold, self.duration)
 
 
     @dataclass
@@ -284,10 +284,10 @@ class PyTTT():
         self.stopTokens = self.startStopTokens.view()[1,:]
 
         # the parameters of each processor: thresholds, durations and weights
-        self.goodTokensThreshold = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
-        self.goodTokensThreshold[:] = goodThreshold
-        self.badTokensThreshold = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
-        self.badTokensThreshold[:] = badThreshold
+        self.goodTokenThreshold = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
+        self.goodTokenThreshold[:] = goodThreshold
+        self.badTokenThreshold = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
+        self.badTokenThreshold[:] = badThreshold
         self.duration = np.zeros((self.NUM_PROCESSORS,), dtype=np.uint32)
         self.duration[:] = duration
         self.W_good = W_good
@@ -339,7 +339,7 @@ class PyTTT():
         self._check_state(
             self.isOn, 
             self.goodTokens, self.badTokens, 
-            self.goodTokensThreshold, self.badTokensThreshold,
+            self.goodTokenThreshold, self.badTokenThreshold,
             self.timeout,
             self.startStopTokens
         )

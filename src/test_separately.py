@@ -175,11 +175,11 @@ async def program_network(clock, dut, W_good: np.ndarray, W_bad: np.ndarray, pre
     await ClockCycles(clock, 1)
 
 
-async def program(clock, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration):
+async def program(clock, dut, goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration):
     # program the network
     await program_network(dut.clock_fast, dut, W_good, W_bad, prefix=0b11)
     # program the processors
-    await program_processor(dut.clock_fast, dut, goodTokensThreshold, badTokensThreshold, duration, prefix=0b10)
+    await program_processor(dut.clock_fast, dut, goodTokenThreshold, badTokenThreshold, duration, prefix=0b10)
 
 
 async def inject_tokens(clock, dut, good_tokens: np.ndarray, bad_tokens: np.ndarray):
@@ -313,8 +313,8 @@ async def test_core_against_golden_model_without_weights(dut):
     DELAY = 10
 
     # set the parameters
-    goodTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
-    badTokensThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
+    goodTokenThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
+    badTokenThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
     duration = np.random.poisson(5, (NUM_PROCESSORS,)).astype(int)
 
     # generate a random number of incoming tokens for each processor
@@ -323,8 +323,8 @@ async def test_core_against_golden_model_without_weights(dut):
     
 
     # make sure the first processor fires in the first timestep, because this was a bug before
-    goodTokensThreshold[0]=0
-    my_good_tokens_in[0,0] = goodTokensThreshold[0]+1
+    goodTokenThreshold[0]=0
+    my_good_tokens_in[0,0] = goodTokenThreshold[0]+1
     my_bad_tokens_in[0,0] = 0
 
     # give each incoming token a lifetime of DELAY
@@ -353,9 +353,9 @@ async def test_core_against_golden_model_without_weights(dut):
     await ClockCycles(clock, 1)
 
     # create the golden reference model
-    golden = PyTTT(goodTokensThreshold, badTokensThreshold, np.zeros((NUM_PROCESSORS,NUM_PROCESSORS),dtype=int), np.zeros((NUM_PROCESSORS,NUM_PROCESSORS),dtype=int), duration)
+    golden = PyTTT(goodTokenThreshold, badTokenThreshold, np.zeros((NUM_PROCESSORS,NUM_PROCESSORS),dtype=int), np.zeros((NUM_PROCESSORS,NUM_PROCESSORS),dtype=int), duration)
     # program the same parameters into the hardware
-    await program_processor(clock, dut, goodTokensThreshold, badTokensThreshold, duration)
+    await program_processor(clock, dut, goodTokenThreshold, badTokenThreshold, duration)
 
     # run both implementations and compare the results
     all_should_startstop = np.zeros((NUM_SAMPLES, NUM_PROCESSORS), dtype=object)
@@ -594,12 +594,12 @@ async def test_main_core_programming(dut):
     assert not timeout, "timeout while resetting"
 
     # generate parameters
-    goodTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
-    badTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
+    goodTokenThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
+    badTokenThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
     duration = np.random.poisson(5, (NUM_PROCESSORS,)).astype(int)
 
     # program the processors
-    await program_processor(dut.clock_fast, dut, goodTokensThreshold, badTokensThreshold, duration, prefix=0b10)
+    await program_processor(dut.clock_fast, dut, goodTokenThreshold, badTokenThreshold, duration, prefix=0b10)
 
     await ClockCycles(clock, 1)
 
@@ -609,8 +609,8 @@ async def test_main_core_programming(dut):
     _duration = parse_verilog_array(dut.main.proc.duration)
 
     # make sure the correct values were programmed in
-    assert np.all(_good_tokens_threshold == goodTokensThreshold), "good token threshold not programmed correctly (observed {} != {})".format(_good_tokens_threshold, goodTokensThreshold)
-    assert np.all(_bad_tokens_threshold == badTokensThreshold), "bad token threshold not programmed correctly (observed {} != {})".format(_bad_tokens_threshold, badTokensThreshold)
+    assert np.all(_good_tokens_threshold == goodTokenThreshold), "good token threshold not programmed correctly (observed {} != {})".format(_good_tokens_threshold, goodTokenThreshold)
+    assert np.all(_bad_tokens_threshold == badTokenThreshold), "bad token threshold not programmed correctly (observed {} != {})".format(_bad_tokens_threshold, badTokenThreshold)
     assert np.all(_duration == duration), "duration not programmed correctly (observed {} != {}) for neuron {}".format(_duration, duration)
 
 
@@ -713,14 +713,14 @@ async def test_main_execution_minimal(dut):
     W_good[0,1] = 3
 
     # generate parameters
-    goodTokensThreshold = np.ones((NUM_PROCESSORS,)).astype(int)
-    badTokensThreshold = np.ones((NUM_PROCESSORS,)).astype(int)
+    goodTokenThreshold = np.ones((NUM_PROCESSORS,)).astype(int)
+    badTokenThreshold = np.ones((NUM_PROCESSORS,)).astype(int)
     duration = 5*np.ones((NUM_PROCESSORS,)).astype(int)
 
     # program the simulated hardware
-    await program(dut.clock_fast, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+    await program(dut.clock_fast, dut, goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration)
     # create a golden reference model
-    golden = PyTTT(goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+    golden = PyTTT(goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration)
 
     # generate some input
     my_good_tokens_in = np.zeros((NUM_SAMPLES, NUM_PROCESSORS)).astype(int)
@@ -847,14 +847,14 @@ async def test_main_execution(dut):
             break
 
     # generate parameters
-    goodTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
-    badTokensThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
+    goodTokenThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
+    badTokenThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
     duration = np.random.poisson(5, (NUM_PROCESSORS,)).astype(int)
 
     # program the simulated hardware
-    await program(dut.clock_fast, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+    await program(dut.clock_fast, dut, goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration)
     # create a golden reference model
-    golden = PyTTT(goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+    golden = PyTTT(goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration)
 
     # generate some random input
     my_good_tokens_in = np.random.poisson(1, size=(NUM_SAMPLES, NUM_PROCESSORS)).astype(int)
@@ -941,7 +941,7 @@ def to_n_bit_twos_complement(num, nbit):
     else:
         return ((1 << nbit) + num) & ((1 << nbit) - 1)
 
-async def program_via_interface(clock, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration):
+async def program_via_interface(clock, dut, goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration):
     NUM_PROCESSORS = int(W_good.shape[0])
     NUM_CONNECTIONS = int(dut.ttt.NUM_CONNECTIONS)
     assert W_good.shape == W_bad.shape == (NUM_PROCESSORS, NUM_PROCESSORS), "shape of W_good and W_bad must be equal to ({}, {})".format(NUM_PROCESSORS, NUM_PROCESSORS)
@@ -980,12 +980,12 @@ async def program_via_interface(clock, dut, goodTokensThreshold, badTokensThresh
 
             # write good token threshold
             dut.ui_in.value = (0b1010 << 4) | to_n_bit_twos_complement(i, 4)
-            dut.uio_in.value = int(goodTokensThreshold[i])
+            dut.uio_in.value = int(goodTokenThreshold[i])
             await ClockCycles(clock, 1)
 
             # write bad token threshold
             dut.ui_in.value = (0b1011 << 4) | to_n_bit_twos_complement(i, 4)
-            dut.uio_in.value = int(badTokensThreshold[i])
+            dut.uio_in.value = int(badTokenThreshold[i])
             await ClockCycles(clock, 1)
 
         # write indptr for processor i
@@ -1064,12 +1064,12 @@ async def test_ticktocktoken_programming(dut):
             break
 
     # generate parameters
-    goodTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
-    badTokensThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
+    goodTokenThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
+    badTokenThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
     duration = np.random.poisson(5, (NUM_PROCESSORS,)).astype(int)
 
     # program the simulated hardware
-    await program_via_interface(dut.clk, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+    await program_via_interface(dut.clk, dut, goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration)
     await ClockCycles(clock, 1)
 
     # check if the weights were programmed in correctly
@@ -1093,8 +1093,8 @@ async def test_ticktocktoken_programming(dut):
     assert np.all(_new_bad_tokens == [W_bad.T[r,c] for r,c in zip(row_idx,col_idx)]), "bad token weights not programmed correctly (observed {} != {})".format(_new_bad_tokens, [W_bad.T[r,c] for r,c in zip(row_idx,col_idx)])
 
     # make sure the correct values were programmed in
-    assert np.all(_good_tokens_threshold == goodTokensThreshold), "good token threshold not programmed correctly (observed {} != {})".format(_good_tokens_threshold, goodTokensThreshold)
-    assert np.all(_bad_tokens_threshold == badTokensThreshold), "bad token threshold not programmed correctly (observed {} != {})".format(_bad_tokens_threshold, badTokensThreshold)
+    assert np.all(_good_tokens_threshold == goodTokenThreshold), "good token threshold not programmed correctly (observed {} != {})".format(_good_tokens_threshold, goodTokenThreshold)
+    assert np.all(_bad_tokens_threshold == badTokenThreshold), "bad token threshold not programmed correctly (observed {} != {})".format(_bad_tokens_threshold, badTokenThreshold)
     assert np.all(_duration == duration), "duration not programmed correctly (observed {} != {}) for neuron {}".format(_duration, duration)
 
 
@@ -1144,21 +1144,21 @@ async def test_ticktocktoken_execution(dut):
             break
 
     # generate parameters
-    goodTokensThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
-    badTokensThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
+    goodTokenThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
+    badTokenThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
     duration = np.random.poisson(5, (NUM_PROCESSORS,)).astype(int)
 
     # make sure that processor 0, which is written first, is excitable
-    goodTokensThreshold[0] = 1
-    badTokensThreshold[0] = 1
+    goodTokenThreshold[0] = 1
+    badTokenThreshold[0] = 1
     duration[0] = 2
 
     # program the simulated hardware
-    await program_via_interface(dut.clk, dut, goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+    await program_via_interface(dut.clk, dut, goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration)
 
 
     # create a golden reference model
-    golden = PyTTT(goodTokensThreshold, badTokensThreshold, W_good, W_bad, duration)
+    golden = PyTTT(goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration)
 
     # generate some random input
     my_good_tokens_in = np.random.poisson(1, size=(NUM_SAMPLES, NUM_PROCESSORS)).astype(int)

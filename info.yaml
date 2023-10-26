@@ -5,15 +5,13 @@ project:
 
 # If using an HDL, set wokwi_id as 0 and uncomment and list your source files here. 
 # Source files must be in ./src and you must list each source file separately
-  source_files:        
+  source_files:
     - tt_um_jleugeri_ticktocktokens.sv
-    - tt_um_jleugeri_ttt_network.sv
-    - tt_um_jleugeri_ttt_processor_core.sv
-    - tt_um_jleugeri_ttt_main.sv
+    - tt_um_jleugeri_ttt_processor.sv
   top_module:  "tt_um_jleugeri_ticktocktokens"      # Put the name of your top module here, must start with "tt_um_". Make it unique by including your github username
 
 # How many tiles your design occupies? A single tile is about 167x108 uM.
-  tiles: "2x2"    # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2 or 8x2
+  tiles: "1x1"    # Valid values: 1x1, 1x2, 2x2, 3x2, 4x2 or 8x2
 
 # Keep a track of the submission yaml
 yaml_version: 4
@@ -38,24 +36,24 @@ documentation:
 
 # A description of what the inputs do (e.g. red button, SPI CLK, SPI MOSI, etc).
   inputs:             
-    - data bit 8
-    - data bit 9
-    - data bit 10
-    - data bit 11
     - instruction bit 0
     - instruction bit 1
     - instruction bit 2
     - instruction bit 3
+    - (reserved)
+    - (reserved)
+    - (reserved)
+    - (reserved)
 # A description of what the outputs do (e.g. status LED, SPI MISO, etc)
   outputs:
-    - processing stage bit 0
-    - processing stage bit 1
-    - token stop
-    - token start
-    - token id bit 0
-    - token id bit 1
-    - token id bit 2
-    - token id bit 3
+    - data 0 | token start flag
+    - data 1 | token stop flag
+    - data 2
+    - data 3
+    - data 4
+    - data 5
+    - data 6
+    - data 7
 # A description of what the bidirectional I/O pins do (e.g. I2C SDA, I2C SCL, etc)
   bidirectional:
     - data bit 0
@@ -65,7 +63,7 @@ documentation:
     - data bit 4
     - data bit 5
     - data bit 6
-    - data bit 7
+    - data bit 7 | good/bad token flag (0 = good, 1 = bad)
 
 # The following fields are optional
   tag:          "tick tock token, event processor, Petri Net"      # comma separated list of tags: test, encryption, experiment, clock, animation, utility, industrial, pwm, fpga, alu, microprocessor, risc, riscv, sensor, signal generator, fft, filter, music, bcd, sound, serial, timer, random number generator, calculator, decoder, counter, puzzle, multiplier, game, oscillator,

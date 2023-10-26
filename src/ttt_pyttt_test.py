@@ -18,19 +18,19 @@ class TestPyTTT(unittest.TestCase):
         # write parameters
         for i in range(self.NUM_PROCESSORS):
             pp = self.proc[i].parameters
-            pp.badTokensThreshold = i
-            pp.goodTokensThreshold =i
+            pp.badTokenThreshold = i
+            pp.goodTokenThreshold =i
             pp.duration = i
 
         # check that all parameters were set correctly
-        self.assertSequenceEqual(self.proc.goodTokensThreshold.tolist(), list(range(self.NUM_PROCESSORS)))
-        self.assertSequenceEqual(self.proc.badTokensThreshold.tolist(), list(range(self.NUM_PROCESSORS)))
+        self.assertSequenceEqual(self.proc.goodTokenThreshold.tolist(), list(range(self.NUM_PROCESSORS)))
+        self.assertSequenceEqual(self.proc.badTokenThreshold.tolist(), list(range(self.NUM_PROCESSORS)))
         self.assertSequenceEqual(self.proc.duration.tolist(), list(range(self.NUM_PROCESSORS)))
 
         # check that the parameters can be read back correctly
         for i in range(self.NUM_PROCESSORS):
-            self.assertEqual(self.proc.goodTokensThreshold[i], i)
-            self.assertEqual(self.proc.badTokensThreshold[i], i)
+            self.assertEqual(self.proc.goodTokenThreshold[i], i)
+            self.assertEqual(self.proc.badTokenThreshold[i], i)
             self.assertEqual(self.proc.duration[i], i)
     
     def test_init_connections(self):
@@ -180,8 +180,8 @@ class TestPyTTT(unittest.TestCase):
         # set parameters incrementally
         for i in range(self.NUM_PROCESSORS):
             pp = self.proc[i].parameters
-            pp.goodTokensThreshold = threshold[i]
-            pp.badTokensThreshold = 1
+            pp.goodTokenThreshold = threshold[i]
+            pp.badTokenThreshold = 1
             pp.duration = duration[i]
 
         # set inputs, record states and outputs
@@ -228,8 +228,8 @@ class TestPyTTT(unittest.TestCase):
         # set parameters
         for i in range(self.NUM_PROCESSORS):
             pp = self.proc[i].parameters
-            pp.goodTokensThreshold = threshold[i]
-            pp.badTokensThreshold = 1
+            pp.goodTokenThreshold = threshold[i]
+            pp.badTokenThreshold = 1
             pp.duration = duration[i]
         
         # set inputs, record states and outputs
@@ -275,8 +275,8 @@ class TestPyTTT(unittest.TestCase):
         # self.proc.W_bad[-1,-1] = 1
 
         # set parameters
-        self.proc.goodTokensThreshold[:] = 1
-        self.proc.badTokensThreshold[:] = 1
+        self.proc.goodTokenThreshold[:] = 1
+        self.proc.badTokenThreshold[:] = 1
         self.proc.duration[:] = 10
 
         # kick off a cascade with an initial pulse
