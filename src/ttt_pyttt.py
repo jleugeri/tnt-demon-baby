@@ -104,6 +104,14 @@ class ProcessorInfo(SerializeToDict):
         @startTokens.setter
         def startTokens(self, val) -> ():
             self.procs.startTokens[self.key] = val
+
+        @property
+        def extendTokens(self) -> bool:
+            return self.procs.extendTokens[self.key]
+        
+        @extendTokens.setter
+        def extendTokens(self, val) -> ():
+            self.procs.extendTokens[self.key] = val
         
 
         @property
@@ -115,7 +123,7 @@ class ProcessorInfo(SerializeToDict):
             self.procs.stopTokens[self.key] = val
 
         def __repr__(self):
-            return "\n    goodTokensIn: {}\n    badTokensIn: {}\n    startTokens: {}\n    stopTokens: {}\n".format(self.goodTokensIn, self.badTokensIn, self.startTokens, self.stopTokens)
+            return "\n    goodTokensIn: {}\n    badTokensIn: {}\n    startTokens: {}\n    extendTokens: {}\n    stopTokens: {}\n".format(self.goodTokensIn, self.badTokensIn, self.startTokens, self.extendTokens, self.stopTokens)
     
 
     
@@ -244,7 +252,7 @@ class ProcessorInfo(SerializeToDict):
         self.connectionsOut = ProcessorInfo.ProcessorConnectionsOut(self.procs, self.key)
 
 class PyTTT():
-    def __init__(self, goodThreshold, badThreshold, W_good, W_bad, duration):
+    def __init__(self, goodThreshold, badThreshold, W_good, W_bad, duration, initialGoodTokens=None, initialBadTokens=None, initialDuration=None):
         """Create a new instance of the TickTockToken processor.
 
         Parameters
@@ -274,14 +282,21 @@ class PyTTT():
 
         # keep track of the internal states of the processors
         self.goodTokens = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
+        if initialGoodTokens is not None:
+            self.goodTokens[:] = initialGoodTokens 
         self.badTokens = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
+        if initialBadTokens is not None:
+            self.badTokens[:] = initialBadTokens 
         self.timeout = np.zeros((self.NUM_PROCESSORS,), dtype=np.uint32)
-        self.isOn = np.zeros((self.NUM_PROCESSORS,), dtype=bool)
+        if initialDuration is not None:
+            self.timeout[:] = initialDuration
+        self.isOn = self.timeout > 0
 
         # the outputs of each processor in the current time-step
-        self.startStopTokens = np.zeros((2,self.NUM_PROCESSORS), dtype=bool)
-        self.startTokens = self.startStopTokens.view()[0,:]
-        self.stopTokens = self.startStopTokens.view()[1,:]
+        self.startExtendStopTokens = np.zeros((3,self.NUM_PROCESSORS), dtype=bool)
+        self.startTokens = self.startExtendStopTokens.view()[0,:]
+        self.extendTokens = self.startExtendStopTokens.view()[1,:]
+        self.stopTokens = self.startExtendStopTokens.view()[2,:]
 
         # the parameters of each processor: thresholds, durations and weights
         self.goodTokenThreshold = np.zeros((self.NUM_PROCESSORS,), dtype=np.int32)
@@ -290,6 +305,7 @@ class PyTTT():
         self.badTokenThreshold[:] = badThreshold
         self.duration = np.zeros((self.NUM_PROCESSORS,), dtype=np.uint32)
         self.duration[:] = duration
+        
         self.W_good = W_good
         self.W_bad = W_bad
 
@@ -317,14 +333,15 @@ class PyTTT():
 
     @staticmethod
     @numba.jit(nopython=True)
-    def _check_state(isOn, good, bad, good_thresh, bad_thresh, timeout, token_startstop):
-        n = token_startstop.shape[1]
+    def _check_state(isOn, good, bad, good_thresh, bad_thresh, timeout, token_start, token_stop, token_extend):
+        n = len(token_start)
         for i in range(n):
             may_turn_on = good[i] >= good_thresh[i]
             may_turn_off = bad[i] > bad_thresh[i]
             is_expired = timeout[i] == 0
-            token_startstop[0,i] = ~isOn[i] & may_turn_on & ~may_turn_off
-            token_startstop[1,i] = isOn[i] & (may_turn_off | is_expired)
+            token_start[i] = ~isOn[i] & may_turn_on & ~may_turn_off
+            token_extend[i] = isOn[i] & is_expired & may_turn_on & ~may_turn_off
+            token_stop[i] = isOn[i] & (may_turn_off | (is_expired & ~token_extend[i])) 
 
     def stimulate_processors(self, good_tokens_in, bad_tokens_in):
         # accumulate incoming tokens
@@ -341,7 +358,9 @@ class PyTTT():
             self.goodTokens, self.badTokens, 
             self.goodTokenThreshold, self.badTokenThreshold,
             self.timeout,
-            self.startStopTokens
+            self.startTokens,
+            self.stopTokens,
+            self.extendTokens
         )
 
         # count down timers
@@ -350,6 +369,8 @@ class PyTTT():
         # update the states
         self.isOn[self.startTokens] = True
         self.timeout[self.startTokens] = self.duration[self.startTokens]
+
+        self.timeout[self.extendTokens] = self.duration[self.extendTokens]
 
         self.isOn[self.stopTokens] = False
         self.timeout[self.stopTokens] = 0
@@ -368,11 +389,11 @@ class PyTTT():
             # reset inputs, add external inputs
             self.stimulate_processors(tok_good, tok_bad)
 
-            # update each processor
-            self.step_processors()
-
             # add recurrent inputs
             self.step_NoC()
+
+            # update each processor
+            self.step_processors()
 
             # yield the outputs
             yield (self.startTokens, self.stopTokens)

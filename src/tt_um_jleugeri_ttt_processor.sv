@@ -39,8 +39,8 @@ module tt_um_jleugeri_ttt_processor #(
         // if reset, reset all internal registers
         if (reset) begin
             // initialize the token counts to negative thresholds
-            bad_tokens <= -bad_tokens_threshold;
-            good_tokens <= -good_tokens_threshold;
+            bad_tokens <= 0;
+            good_tokens <= 0;
             isOn <= 0;
             remaining_duration <= 0;
             token_start <= 0;
@@ -54,33 +54,47 @@ module tt_um_jleugeri_ttt_processor #(
                 // 4'b0000: add/substract good tokens
                 4'b0000 : begin
                     good_tokens <= good_tokens + TOKEN_BITS'(good_tokens_in);
+                    data_out <= DATA_BITS'(good_tokens_in);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
                 
                 // 4'b0001: add/substract bad tokens
                 4'b0001 : begin
                     bad_tokens <= bad_tokens + TOKEN_BITS'(bad_tokens_in);
+                    data_out <= DATA_BITS'(bad_tokens_in);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
 
                 // 4'b0010: set good token count
                 4'b0010 : begin
                     good_tokens <= data_in[TOKEN_BITS-1:0];
                     data_out <= DATA_BITS'(data_in[TOKEN_BITS-1:0]);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
                 
                 // 4'b0011: get good token count
                 4'b0011 : begin
                     data_out <= DATA_BITS'(good_tokens);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
 
                 // 4'b0100: set bad token count
                 4'b0100 : begin
                     bad_tokens <= data_in[TOKEN_BITS-1:0];
                     data_out <= DATA_BITS'(data_in[TOKEN_BITS-1:0]);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
                 
                 // 4'b0101: get bad token count
                 4'b0101 : begin
                     data_out <= DATA_BITS'(bad_tokens);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
 
                 // 4'b0110: set remaining duration (implicitly sets on-state)
@@ -93,16 +107,20 @@ module tt_um_jleugeri_ttt_processor #(
                         isOn <= 1;
                     end
                     data_out <= DATA_BITS'(data_in[DURATION_BITS-1:0]);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
                 
                 // 4'b0111: get remaining duration (implicitly gets on-state)
                 4'b0111 : begin
                     data_out <= DATA_BITS'(remaining_duration);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
 
                 // 4'b1000: Tally up and make a decision (start/stop token?)
                 4'b1000 : begin
-                    if ( !isOn && ( good_tokens >= 0 ) && ( bad_tokens <= 0 ) ) begin
+                    if ( !isOn && ( good_tokens >= good_tokens_threshold ) && ( bad_tokens <= bad_tokens_threshold ) ) begin
                         // turn on 
                         isOn <= 1;
 
@@ -113,7 +131,12 @@ module tt_um_jleugeri_ttt_processor #(
                         token_start <= 1;
                         token_stop <= 0;
                     end 
-                    else if ( isOn && ((bad_tokens > 0) || remaining_duration == 0 )) begin
+                    else if ( isOn && (remaining_duration == 0)  && ( good_tokens >= good_tokens_threshold ) && ( bad_tokens <= bad_tokens_threshold )) begin
+                        // we'd just turn off and on again, so instead, just stay on
+                        // restart countdown timer
+                        remaining_duration <= duration;
+                    end
+                    else if ( isOn && ((bad_tokens > bad_tokens_threshold) || remaining_duration == 0 )) begin
                         // turn off
                         isOn <= 0;
 
@@ -131,47 +154,45 @@ module tt_um_jleugeri_ttt_processor #(
                     end
                 end
 
-                // 4'b1001: advance countdown (stop token?)
+                // 4'b1001: advance countdown
                 4'b1001 : begin
-                    if (isOn) begin
-                        if (remaining_duration == 1) begin
-                            isOn <= 0;
-                            remaining_duration <= 0;
-                            token_start <= 0;
-                            token_stop <= 1;
-                        end
-                        else begin
-                            remaining_duration <= remaining_duration - 1;
-                            token_start <= 0;
-                            token_stop <= 0;
-                        end
+                    if (isOn && remaining_duration != 0)  begin
+                        remaining_duration <= remaining_duration - 1;
                     end
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
 
 
                 // 4'b1010: set good token threshold
                 4'b1010 : begin
-                    good_tokens <= good_tokens_threshold - data_in[TOKEN_BITS-1:0];
                     good_tokens_threshold <= data_in[TOKEN_BITS-1:0];
                     data_out <= DATA_BITS'(data_in[TOKEN_BITS-1:0]);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
                 
                 // 4'b1011: get good token threshold
                 4'b1011 : begin
                     data_out <= DATA_BITS'(good_tokens_threshold);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
 
 
                 // 4'b1100: set bad token threshold
                 4'b1100 : begin
-                    bad_tokens <= bad_tokens_threshold - data_in[TOKEN_BITS-1:0];
                     bad_tokens_threshold <= data_in[TOKEN_BITS-1:0];
                     data_out <= DATA_BITS'(data_in[TOKEN_BITS-1:0]);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
                 
-                // 4'b1011: get bad token threshold
-                4'b1011 : begin
+                // 4'b1101: get bad token threshold
+                4'b1101 : begin
                     data_out <= DATA_BITS'(bad_tokens_threshold);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
 
 
@@ -179,11 +200,15 @@ module tt_um_jleugeri_ttt_processor #(
                 4'b1110 : begin
                     duration <= data_in[DURATION_BITS-1:0];
                     data_out <= DATA_BITS'(data_in[DURATION_BITS-1:0]);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
                 
                 // 4'b1111: get token duration
                 4'b1111 : begin
                     data_out <= DATA_BITS'(duration);
+                    token_start <= 0;
+                    token_stop <= 0;
                 end
             endcase
         end

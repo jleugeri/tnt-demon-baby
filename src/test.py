@@ -7,6 +7,7 @@ import numpy as np
 from scipy import sparse as sps
 from ttt_pyttt import PyTTT
 from utils import *
+from collections import namedtuple
 
 async def program_processor(
         clock, 
@@ -18,7 +19,7 @@ async def program_processor(
         badTokenCount: Optional[int] = None,
         remainingDuration: Optional[int] = None,
         flags: int = 0b0000):
-    dut._log.info("programming core...")
+    #dut._log.info("programming core...")
 
     assert dut.rst_n.value == 1, "Cannot program during reset!"
 
@@ -52,7 +53,7 @@ async def program_processor(
         dut.uio_in.value = 0b11111111 & int(goodTokenCount)
         await RisingEdge(clock)
         await FallingEdge(clock)
-        assert dut.uo_out.value.integer == goodTokenCount, "good token count not programmed correctly (observed {} != {})".format(dut.uo_out.value, goodTokenCount)
+        assert dut.uo_out.value.integer == to_n_bit_twos_complement(goodTokenCount,8), "good token count not programmed correctly (observed {} != {})".format(dut.uo_out.value, goodTokenCount)
 
     if badTokenCount is not None:
         # set the bad token count
@@ -60,7 +61,7 @@ async def program_processor(
         dut.uio_in.value = 0b11111111 & int(badTokenCount)
         await RisingEdge(clock)
         await FallingEdge(clock)
-        assert dut.uo_out.value.integer == badTokenCount, "bad token count not programmed correctly (observed {} != {})".format(dut.uo_out.value, badTokenCount)
+        assert dut.uo_out.value.integer == to_n_bit_twos_complement(badTokenCount,8), "bad token count not programmed correctly (observed {} != {})".format(dut.uo_out.value, badTokenCount)
 
     if remainingDuration is not None:
         # set the remaining duration
@@ -85,11 +86,13 @@ async def get_processor_state(
         badTokenCount: Union[bool, int] = True,
         remainingDuration: Union[bool, int] = True):
     
-    dut._log.info("getting processor state...")
+    #dut._log.info("getting processor state...")
 
     assert dut.rst_n.value == 1, "Cannot read processor state during reset!"
 
     observed = {}
+    await RisingEdge(clock)
+    await FallingEdge(clock)
 
     if duration is not False:
         # get the duration
@@ -98,136 +101,174 @@ async def get_processor_state(
         await RisingEdge(clock)
         await FallingEdge(clock)
         observed["duration"] = dut.uo_out.value.integer
-        if not isinstance(duration, bool):
-            assert dut.uo_out.value.integer == duration, "duration not programmed correctly (observed {} != {})".format(dut.uo_out.value, duration)
 
     if goodTokenThreshold is not False:
         # get the good token threshold
-        dut.ui_in.value  = 0b1010
+        dut.ui_in.value  = 0b1011
         dut.uio_in.value = 0b00000000
         await RisingEdge(clock)
         await FallingEdge(clock)
         observed["goodTokenThreshold"] = dut.uo_out.value.integer
-        if not isinstance(goodTokenThreshold, bool):
-            assert dut.uo_out.value.integer == goodTokenThreshold, "good token threshold not programmed correctly (observed {} != {})".format(dut.uo_out.value, goodTokenThreshold)
 
     if badTokenThreshold is not False:
         # get the bad token threshold
-        dut.ui_in.value  = 0b1100
+        dut.ui_in.value  = 0b1101
         dut.uio_in.value = 0b00000000
         await RisingEdge(clock)
         await FallingEdge(clock)
         observed["badTokenThreshold"] = dut.uo_out.value.integer
-        if not isinstance(badTokenThreshold, bool):
-            assert dut.uo_out.value.integer == badTokenThreshold, "bad token threshold not programmed correctly (observed {} != {})".format(dut.uo_out.value, badTokenThreshold)
     
     if goodTokenCount is not False:
         # get the good token count
-        dut.ui_in.value  = 0b0010
+        dut.ui_in.value  = 0b0011
         dut.uio_in.value = 0b00000000
         await RisingEdge(clock)
         await FallingEdge(clock)
         observed["goodTokenCount"] = dut.uo_out.value.integer
-        if not isinstance(goodTokenCount, bool):
-            assert dut.uo_out.value.integer == goodTokenCount, "good token count not programmed correctly (observed {} != {})".format(dut.uo_out.value, goodTokenCount)
 
     if badTokenCount is not False:
         # get the bad token count
-        dut.ui_in.value  = 0b0100
+        dut.ui_in.value  = 0b0101
         dut.uio_in.value = 0b00000000
         await RisingEdge(clock)
         await FallingEdge(clock)
         observed["badTokenCount"] = dut.uo_out.value.integer
-        if not isinstance(badTokenCount, bool):
-            assert dut.uo_out.value.integer == badTokenCount, "bad token count not programmed correctly (observed {} != {})".format(dut.uo_out.value, badTokenCount)
 
     if remainingDuration is not False:
         # get the remaining duration
-        dut.ui_in.value  = 0b0110
+        dut.ui_in.value  = 0b0111
         dut.uio_in.value = 0b00000000
         await RisingEdge(clock)
         await FallingEdge(clock)
         observed["remainingDuration"] = dut.uo_out.value.integer
-        if not isinstance(remainingDuration, bool):
-            assert dut.uo_out.value.integer == remainingDuration, "remaining duration not programmed correctly (observed {} != {})".format(dut.uo_out.value, remainingDuration)
 
     # Clean up again
     dut.ui_in.value = 0
     dut.uio_in.value = 0
     await ClockCycles(clock, 1)
+    return observed
+
+def compare_processor_state(observed, expected):
+    assert observed["duration"] == expected["duration"], "duration not programmed correctly (observed {} != {})".format(observed["duration"], expected["duration"])
+    assert observed["goodTokenThreshold"] == expected["goodTokenThreshold"], "good token threshold not programmed correctly (observed {} != {})".format(observed["goodTokenThreshold"], expected["goodTokenThreshold"])
+    assert observed["badTokenThreshold"] == expected["badTokenThreshold"], "bad token threshold not programmed correctly (observed {} != {})".format(observed["badTokenThreshold"], expected["badTokenThreshold"])
+    assert observed["goodTokenCount"] == to_n_bit_twos_complement(expected["goodTokenCount"],8), "good token count not programmed correctly (observed {} != {})".format(observed["goodTokenCount"], to_n_bit_twos_complement(expected["goodTokenCount"],8))
+    assert observed["badTokenCount"] == to_n_bit_twos_complement(expected["badTokenCount"],8), "bad token count not programmed correctly (observed {} != {})".format(observed["badTokenCount"], to_n_bit_twos_complement(expected["badTokenCount"],8))
+    assert observed["remainingDuration"] == expected["remainingDuration"], "remaining duration not programmed correctly (observed {} != {})".format(observed["remainingDuration"], expected["remainingDuration"])
+
+
+async def stimulate(clock, dut, goodTokens=0, badTokens=0):
+    if goodTokens != 0:
+        # stimulate with good tokens
+        dut.ui_in.value = 0b0000
+        dut.uio_in.value = int(goodTokens)
+        await RisingEdge(clock)
+        await FallingEdge(clock)
+        assert dut.uo_out.value.integer == to_n_bit_twos_complement(goodTokens,8), "stimulation failed; read back wrong value {} != {}".format(dut.uo_out.value.integer, goodTokens)
+
+    if badTokens != 0:
+        # stimulate with bad tokens
+        dut.ui_in.value = 0b0001
+        dut.uio_in.value = int(badTokens)
+        await RisingEdge(clock)
+        await FallingEdge(clock)
+        assert dut.uo_out.value.integer == to_n_bit_twos_complement(badTokens,8), "stimulation failed; read back wrong value {} != {}".format(dut.uo_out.value.integer, badTokens)
+
+    dut.ui_in.value = 0b0000
+    dut.uio_in.value = 0b0000
+
+StartStop = namedtuple("StartStop", ["start", "stop"])
+
+async def tally(clock, dut):
+    dut.ui_in.value = 0b1000
+    dut.uio_in.value = 0b00000000
+    await RisingEdge(clock)
+    await FallingEdge(clock)
+    return StartStop(start=dut.uo_out[1].value, stop=dut.uo_out[0].value)
+
+async def countdown(clock, dut):
+    dut.ui_in.value = 0b1001
+    dut.uio_in.value = 0b00000000
+    await RisingEdge(clock)
+    await FallingEdge(clock)
+
 
 @cocotb.test()
 async def test_ticktocktoken_programming(dut):
-    NUM_SAMPLES = 100
+    NUM_TRIALS = 100
 
     dut._log.info("start")
     cocotb.start_soon(Clock(dut.clk, 20, units="ns").start())
     clock = dut.clk
-
-    await ClockCycles(clock, 3)
-    dut.rst_n.value = 0
-    await ClockCycles(clock, 1)
-    dut.rst_n.value = 1
     dut.ena.value = 1
-    await ClockCycles(clock, 1)
-
-    # generate parameters
-    goodTokenThreshold = int(np.random.poisson(1))
-    badTokenThreshold = int(np.random.poisson(0.25))
-    duration = int(np.random.poisson(5))
-
-    # generate initial conditions
-    goodTokenCount = int(np.random.poisson(1))
-    badTokenCount = int(np.random.poisson(0.25))
-    remainingDuration = int(np.random.poisson(5))
-
-    # program the simulated hardware
-    await program_processor(dut.clk, dut, 
-                            goodTokenThreshold=goodTokenThreshold, 
-                            badTokenThreshold=badTokenThreshold, 
-                            duration=duration,
-                            goodTokenCount=goodTokenCount,
-                            badTokenCount=badTokenCount,
-                            remainingDuration=remainingDuration)
-
-    # get processor state
-    state = await get_processor_state(dut.clk, dut)
-
-
-@cocotb.test(skip=True)
-async def test_ticktocktoken_execution(dut):
-    NUM_PROCESSORS = int(dut.ttt.NUM_PROCESSORS)
-    NUM_CONNECTIONS = int(dut.ttt.NUM_CONNECTIONS)
-    assert NUM_PROCESSORS > 0, "NUM_PROCESSORS must be greater than 0"
-    assert NUM_CONNECTIONS > 0, "NUM_CONNECTIONS must be greater than 0"
-
-    NUM_SAMPLES = 100
-
-    dut._log.info("start")
-    cocotb.start_soon(Clock(dut.clk, 20, units="ns").start())
-    clock = dut.clk
 
     await ClockCycles(clock, 3)
     dut.rst_n.value = 0
     await ClockCycles(clock, 1)
     dut.rst_n.value = 1
+    await ClockCycles(clock, 3)
 
-    # reset every neuron
-    timeout = True
-    for i in range(1_000_000):
-        await ClockCycles(clock, 1)
+    for i in range(NUM_TRIALS):
+        # generate parameters
+        goodTokenThreshold = int(np.random.poisson(1))
+        badTokenThreshold = int(np.random.poisson(0.25))
+        duration = int(np.random.poisson(5))
 
-        if(dut.uo_out.value[6:7] == 0b00):
-            timeout = False
-            break
+        # generate initial conditions
+        goodTokenCount = int(np.random.poisson(1))
+        badTokenCount = int(np.random.poisson(0.25))
+        remainingDuration = int(np.random.poisson(5))
 
-    assert not timeout, "timeout while resetting"
+        expected = dict(
+            goodTokenThreshold=goodTokenThreshold, 
+            badTokenThreshold=badTokenThreshold, 
+            duration=duration,
+            goodTokenCount=goodTokenCount,
+            badTokenCount=badTokenCount,
+            remainingDuration=remainingDuration
+        )
+
+        # program the simulated hardware
+        await program_processor(
+            dut.clk, 
+            dut, 
+            **expected
+        )
+
+        await ClockCycles(clock, 3)
+
+        # get processor state
+        observed = await get_processor_state(dut.clk, dut )
+
+        compare_processor_state(observed, expected)
+
+
+@cocotb.test()
+async def test_ticktocktoken_execution(dut):
+    NUM_PROCESSORS = 10
+    NUM_SAMPLES = 100
+    NUM_CONNECTIONS = 50
+
+    dut._log.info("start")
+    cocotb.start_soon(Clock(dut.clk, 20, units="ns").start())
+    clock = dut.clk
+    dut.ena.value = 1
+
+    dut.ui_in.value = 0
+    dut.uio_in.value = 0
+
+    await ClockCycles(clock, 3)
+    dut.rst_n.value = 0
     await ClockCycles(clock, 1)
+    dut.rst_n.value = 1
+    await RisingEdge(clock)
+    await FallingEdge(clock)
+
 
     # generate the weights
     while True:
-        W_good = np.random.poisson(0.1, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
-        W_bad = np.random.poisson(0.1, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
+        W_good = np.random.poisson(0.5*NUM_CONNECTIONS/NUM_PROCESSORS**2, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
+        W_bad = np.random.poisson(0.5*NUM_CONNECTIONS/NUM_PROCESSORS**2, (NUM_PROCESSORS, NUM_PROCESSORS)).astype(int)
         
         # make sure the first processor has outgoing connections
         W_good[1 % NUM_PROCESSORS,0] = 1
@@ -235,25 +276,37 @@ async def test_ticktocktoken_execution(dut):
 
         has_connection = sps.csr_matrix(np.logical_or(W_good != 0, W_bad != 0))
 
-        if has_connection.nnz <= NUM_CONNECTIONS and has_connection.nnz > 10 and W_good.max() < 5 and W_bad.max() < 5:
+        if has_connection.nnz <= NUM_CONNECTIONS and has_connection.nnz > 0 and W_good.max() < 5 and W_bad.max() < 5:
             break
+
+    #W_good[:,:]=0
+    #W_bad[:,:]=0
 
     # generate parameters
     goodTokenThreshold = np.random.poisson(1, (NUM_PROCESSORS,)).astype(int)
     badTokenThreshold = np.random.poisson(0.25, (NUM_PROCESSORS,)).astype(int)
     duration = np.random.poisson(5, (NUM_PROCESSORS,)).astype(int)
 
+    initialGoodTokens = np.zeros((NUM_PROCESSORS,), dtype=int)
+    initialBadTokens = np.zeros((NUM_PROCESSORS,), dtype=int)
+    initialDuration = np.zeros((NUM_PROCESSORS,), dtype=int)
+
     # make sure that processor 0, which is written first, is excitable
     goodTokenThreshold[0] = 1
     badTokenThreshold[0] = 1
     duration[0] = 2
 
-    # program the simulated hardware
-    await program_via_interface(dut.clk, dut, goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration)
-
-
     # create a golden reference model
-    golden = PyTTT(goodTokenThreshold, badTokenThreshold, W_good, W_bad, duration)
+    golden = PyTTT(
+        goodTokenThreshold, 
+        badTokenThreshold, 
+        W_good,
+        W_bad, 
+        duration, 
+        initialGoodTokens, 
+        initialBadTokens, 
+        initialDuration
+    )
 
     # generate some random input
     my_good_tokens_in = np.random.poisson(1, size=(NUM_SAMPLES, NUM_PROCESSORS)).astype(int)
@@ -278,64 +331,85 @@ async def test_ticktocktoken_execution(dut):
 
     # first, record the reference signals
     for (step, (should_start, should_stop)) in enumerate(golden.run(my_good_tokens_in, my_bad_tokens_in)):
-        all_should_startstop[step,:] = list(zip(should_start, should_stop))
+        for proc,(st,sp) in enumerate(zip(should_start, should_stop)):
+            all_should_startstop[step,proc] = StartStop(start=st,stop=sp)
 
-    assert all_should_startstop[0,0] == (True, False), "first processor did not start in first step, but we programmed it to do so!"
+    # make sure the reference model works
+    assert all_should_startstop[0,0] == StartStop(start=True,stop=False), "first processor in reference model did not start in first step, but we programmed it to do so!"
+
+    start_token = np.zeros((NUM_PROCESSORS,), dtype=bool)
+    stop_token = np.zeros((NUM_PROCESSORS,), dtype=bool)
+    start_token_prev = np.zeros_like(start_token)
+    stop_token_prev = np.zeros_like(stop_token)
+    states = [{
+        "goodTokenThreshold": goodTokenThreshold[i],
+        "badTokenThreshold": badTokenThreshold[i],
+        "duration": duration[i],
+        "goodTokenCount": initialGoodTokens[i],
+        "badTokenCount": initialBadTokens[i],
+        "remainingDuration": initialDuration[i],
+    } for i in range(NUM_PROCESSORS)]
 
     # then record our hardware implementation
     for (step,(good_in, bad_in)) in enumerate(zip(my_good_tokens_in, my_bad_tokens_in)):
         #print("Step {}".format(step))
-        nz = np.nonzero(np.logical_or(good_in != 0, bad_in != 0))[0]
 
-        if (len(nz) == 0):
-            # proceed directly to next stage, because there is no input
-            dut.ui_in.value = 0b00100000
-        else:
-            # hold execution due to external input
+        # update all processors one at a time
+        for p in range(NUM_PROCESSORS):
+            # load all the processor parameters from memory
+            await program_processor( dut.clk, dut, **states[p])
 
-            # present all the good and bad inputs one by one
-            for idx in nz:
-                dut.ui_in.value = (0b0001 << 4) | to_n_bit_twos_complement(int(idx),4)
-                dut.uio_in.value = (to_n_bit_twos_complement(int(good_in[idx]),4) << 4) | to_n_bit_twos_complement(int(bad_in[idx]),4)
+            # add/remove the external tokens to this processor
+            await stimulate( dut.clk, dut, good_in[p], bad_in[p] )
 
-                await ClockCycles(clock, 1)
+            # add the just started recurrent tokens to this processor one by one
+            for src,start in enumerate(start_token_prev):
+                if start:
+                    if step==0:
+                        raise AssertionError("Shouldn't have any recurrent inputs in step 0, but started {} good and {} bad tokens from {} to {}".format(W_good[p,src], W_bad[p,src], src,p))
+                    await stimulate( dut.clk, dut, W_good[p,src], W_bad[p,src] )
 
-            dut.uio_in.value = 0
+            # remove the just stopped recurrent tokens to this processor one by one
+            for src,stop in enumerate(stop_token_prev):
+                if stop:
+                    if step == 0:
+                        raise AssertionError("Shouldn't have any recurrent inputs in step 0, but stopped {} good and {} bad tokens from {} to {}".format(W_good[p,src], W_bad[p,src], src,p))
+                    await stimulate( dut.clk, dut, -W_good[p,src], -W_bad[p,src] )
 
-            # release execution            
-            dut.ui_in.value = 0b00100000
+            # for now, just advance at every iteration
+            if(True):
+                await countdown( dut.clk, dut )
+
+            # finally tally up the sums in the processor and make a decision whether or not to start/stop firing
+            startstop = await tally(dut.clk, dut)
+
+            dut.ui_in.value = 0
+            
+            # record the start/stop signals
+            start_token[p] = startstop.start
+            stop_token[p] = startstop.stop
+            all_did_startstop[step,p] = startstop
+            times[step] = get_sim_time("ns")
+
+            # record the processor's internal state (but not the parameters)
+            new_state = await get_processor_state( 
+                dut.clk, 
+                dut, 
+                goodTokenThreshold=False, 
+                badTokenThreshold=False, 
+                duration=False
+            )
+
+            # update our internal record
+            states[p].update(new_state)
         
-        # wait for at least one cycle
-        await ClockCycles(clock, 1)
-        # then assert the instruction 0b0000 to block when re-entering input stage
-        dut.ui_in.value = 0b00000000
-
-        timeout = True
-        for i in range(1_000_000):
+            await RisingEdge(clock)
             await FallingEdge(clock)
 
-            #print(dut.stage.value, dut.output_valid.value, dut.token_startstop.value.binstr)
-
-            data_out = dut.uo_out.value
-            # unfortunately, this gets sliced wrong in cocotb, so we need to reverse everything
-            #proc_out = data_out[7:4]
-            #stsp = data_out[3:2]
-            #stat = data_out[1:0]
-            proc_out = data_out[0:3]
-            stsp = data_out[4:5]
-            stat = data_out[6:7]
-            if (stsp != 0b00):
-                all_did_startstop[step,proc_out] = tuple(map(bool, stsp))
-                times[step] = get_sim_time("ns")
-
-            if (stat.value == 0):
-                timeout = False
-                break
-        
-        await ClockCycles(clock, 1)
-
-        assert ~timeout, "Operation timed out!"
+        # update the start/stop tokens for the next iteration
+        start_token_prev[:] = start_token
+        stop_token_prev[:] = stop_token
 
     # check if the processors started or stopped a token when expected
-    fmt=np.vectorize(lambda x: "{}{}".format(int(x[0]),int(x[1])))
+    fmt=np.vectorize(lambda x: "start: {}, stop: {}".format(int(x.start),int(x.stop)))
     assert np.all(all_did_startstop == all_should_startstop), "token_start does not match the reference model: {}".format(diff_string(fmt(all_did_startstop), fmt(all_should_startstop), "Step ", "Proc "))

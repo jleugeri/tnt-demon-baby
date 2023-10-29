@@ -30,21 +30,11 @@
 // +-----------+-----------+-----------------------+
 //
 // where for each instruction, the values are packed into the LSBs of the data field.
-// 
-// For sending in new tokens, the data field contains a binary flag to distinguish good from bad tokens.
 //
-// |<--   uio_in (8bit) -->|
-// +--+--------------------+
-// |gb| token count (7bit) |
-// +--+--------------------+
-//  |
-//   `- gb: good/bad token flag (1bit)
-//
-// In response to every read/write instruction, the corresponding value is written to uo_out
+// In response to every read/write instruction, the latest value is echoed back on uo_out
 // (for read: the current value; for write: the just written value).
 // 
-// For the tally instruction (4'b1000) and the countdown instruction (4'b1001),
-// the returned format is:
+// For the tally instruction (4'b1000), no input data is needed and the returned format is:
 //
 // |<--  uo_out (8bit)  -->|
 // +-----------------+-----+
@@ -81,8 +71,8 @@ module tt_um_jleugeri_ticktocktokens (
     // data I/O logic
     // breaking out the single "token input" signal into good and bad tokens, respectively, based on the MSB
     logic signed [NEW_TOKEN_BITS-1:0] good_tokens_in, bad_tokens_in;
-    assign good_tokens_in = uio_in[NEW_TOKEN_BITS-1] ? NEW_TOKEN_BITS'(1'b0) : uio_in[NEW_TOKEN_BITS-1:0];
-    assign bad_tokens_in  = uio_in[NEW_TOKEN_BITS-1] ? NEW_TOKEN_BITS'(1'b0) : uio_in[NEW_TOKEN_BITS-1:0];
+    assign good_tokens_in = (instruction == 4'b0000) ? uio_in[NEW_TOKEN_BITS-1:0] : NEW_TOKEN_BITS'(1'b0);
+    assign bad_tokens_in  = (instruction == 4'b0001) ? uio_in[NEW_TOKEN_BITS-1:0] : NEW_TOKEN_BITS'(1'b0);
 
     // combine the output signals
     logic token_start, token_stop, token_valid, expect_data;
@@ -126,7 +116,7 @@ module tt_um_jleugeri_ticktocktokens (
         if ( rst_n == 0 ) begin
             expect_data <= 1'b0;
         end else begin
-            expect_data <= (instruction != 4'b1000) && (instruction != 4'b1001);
+            expect_data <= (instruction != 4'b1000);
         end
     end
 
