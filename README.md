@@ -13,9 +13,35 @@ Your milage may vary.
 Each TTT is an abstract "token", which is created by a processor when certain conditions are met, and then expires after a fixed amount of time. See the figure 1 below.
 
 
-| Figure 1: | Figure 2: |
-|-----------|-----------|
-| ![Logic implemented by a TickTockToken Processor.](event_processor.svg) | ![The routing between the processors.](routing_architecture.svg) |
+<table>
+    <tr>
+        <td>
+            <img src="event_processor.png" alt="Logic implemented by a TickTockToken Processor."/>
+        </td>
+        <td>
+            <img src="routing_architecture.png" alt="Possible routing arrangement between the processors."/>
+        </td>
+    </tr>
+    <tr>
+        <td>
+            <em>Figure 1:</em> Logic implemented by a TickTockToken Processor.
+        </td>
+        <td>
+            <em>Figure 2:</em> Possible routing arrangement between the processors.
+        </td>
+    </tr>
+    <tr>
+        <td colspan=2>
+            <img src="multiplexed.png" alt="Actual time-multiplexed implementation of the TickTockToken concept for TinyTapeout."/>
+        </td>
+    </tr>
+    <tr>
+        <td colspan=2>
+           <em>Figure 3:</em> Actual time-multiplexed implementation of the TickTockToken concept for TinyTapeout. 
+           A single processor is iteratively re-programmed and stimulated to emulate multiple parallel running processors.
+        </td>
+    </tr>
+</table>
 
 The lifetime of each token is tracked by a timer within the issuing processor, which begins counting down once a token is generated. When the timer runs out (or the token is otherwise terminated), I say that token has *expired*.
 
@@ -26,14 +52,15 @@ Here, I'll treat the connectome as static for the entire simulation.
 Each processor maintains counts of all good and all bad non-expired tokens it has received, which I'll call the *good* and the *bad live token count*, respectively.
 The processor continuously monitors these two counts as new tokens come in or expire, and compares them against the respective *good* and *bad token threshold*.
 While the bad token threshold is exceeded, the processor cannot generate any new tokens, and any already issued token(s) are *terminated*, i.e. they expire immediately.
-If that is not the case and the good token threshold is exceeded, the processor will issue a new token (if it has capacity to do so; here, I'll assume a capacity of just one live token per processor, but this might change in future iterations)
+If that is not the case and the good token threshold is exceeded, the processor will issue a new token (if it has capacity to do so; here, I'll assume a capacity of just one live token per processor, but this might change in future iterations).
 
-When a new token is generated, this is communicated to all receiving processors by a *start* message; when the token ultimately expires (or is terminated), this is communicated by a second *stop* message.
+When a new token is generated, this is communicated to all receiving processors by a *start* message; when the token ultimately expires (or is terminated), this is communicated by a second *stop* message. If a token would be started directly after it has been stopped (e.g. if the token expired while the conditions for generating a new token were met), the timer is just silently extneded, i.e. the timer is reset to full duration, and no message is sent instead (the start and stop message "cancel").
 These messages could be either sent via hard-wired connections, or via a packet-switched network-on-chip.
 
 ## How to use it
-For simulation, run the enclosed scripts in the /simulations folder.
-For running the hardware, I will add scripts in the /experiments folder once the hardware is tested.
+For testing, run `test.py`.
+For simulations, run the scripts in the /simulations folder (T.B.D).
+For running the simulations on the actual hardware, run the scripts in the /experiments folder (T.B.D).
 
 ## Acknowledgements
 The original idea for this concept emerged from joint work with [Pascal Nieters](https://scholar.google.com/citations?user=Bl2wxiQAAAAJ&hl=en) on a simple [event-based model of neural computation](https://www.frontiersin.org/articles/10.3389/fcogn.2023.1044216/full) that could be interesting for [a neuromorphic hardware implementation](https://dl.acm.org/doi/10.1145/3381755.3381763) and somewhat resembles an [extension of Time Petri Nets](https://dl.acm.org/doi/10.1145/3517343.3517362).
