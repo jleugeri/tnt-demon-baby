@@ -61,6 +61,10 @@ module tt_um_jleugeri_ticktocktokens (
     localparam int DATA_BITS = 8;
     localparam int INSTRUCTION_BITS = 4;
 
+    // unused pins
+    wire [7:INSTRUCTION_BITS] unused_in;
+    assign unused_in = ui_in[7:INSTRUCTION_BITS];
+
     // programming logic
     logic [INSTRUCTION_BITS-1:0] instruction;
     assign instruction = ui_in[INSTRUCTION_BITS-1:0];
@@ -80,7 +84,7 @@ module tt_um_jleugeri_ticktocktokens (
 
     // set all programmable IO pins to input
     assign uio_oe  = 8'b00000000;
-    assign uio_out = 8'bZZZZZZZZ;
+    assign uio_out = 8'b00000000;
 
     // control flow logic
     logic reset;
