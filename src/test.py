@@ -184,6 +184,7 @@ async def tally(clock, dut):
     dut.uio_in.value = 0b00000000
     await RisingEdge(clock)
     await FallingEdge(clock)
+    dut.ui_in.value = 0b0000
     return StartStop(start=dut.uo_out[1].value, stop=dut.uo_out[0].value)
 
 async def countdown(clock, dut):
@@ -191,10 +192,11 @@ async def countdown(clock, dut):
     dut.uio_in.value = 0b00000000
     await RisingEdge(clock)
     await FallingEdge(clock)
+    dut.ui_in.value = 0b0000
 
 
 @cocotb.test()
-async def test_ticktocktoken_programming(dut):
+async def test_programming(dut):
     NUM_TRIALS = 100
 
     dut._log.info("start")
@@ -244,7 +246,7 @@ async def test_ticktocktoken_programming(dut):
 
 
 @cocotb.test()
-async def test_ticktocktoken_execution(dut):
+async def test_execution(dut):
     NUM_PROCESSORS = 10
     NUM_SAMPLES = 100
     NUM_CONNECTIONS = 50
@@ -413,3 +415,309 @@ async def test_ticktocktoken_execution(dut):
     # check if the processors started or stopped a token when expected
     fmt=np.vectorize(lambda x: "start: {}, stop: {}".format(int(x.start),int(x.stop)))
     assert np.all(all_did_startstop == all_should_startstop), "token_start does not match the reference model: {}".format(diff_string(fmt(all_did_startstop), fmt(all_should_startstop), "Step ", "Proc "))
+
+
+@cocotb.test()
+async def test_token_counters(dut):
+    dut._log.info("start")
+    cocotb.start_soon(Clock(dut.clk, 20, units="ns").start())
+    clock = dut.clk
+    dut.ena.value = 1
+
+    dut.ui_in.value = 0
+    dut.uio_in.value = 0
+
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 0
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 1
+    await ClockCycles(clock, 1)
+
+    # set good and bad token thresholds to 5
+    await program_processor( clock, dut, goodTokenThreshold=5, badTokenThreshold=5 )
+
+    await ClockCycles(clock, 1)
+
+    # send first good and bad token
+    await stimulate( clock, dut, goodTokens=1, badTokens=1 )
+    
+    # do nothing for a while
+    await ClockCycles(clock, 3)
+
+    # update the state -> 1,1 -> no token yet
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == token_stop == 0, "no tokens should have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+
+    # add two more tokens, one-by-one
+    await stimulate( clock, dut, goodTokens=1, badTokens=1 )
+    await stimulate( clock, dut, goodTokens=1, badTokens=1 )
+
+    # update the state -> 3,3 -> no token yet
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+
+    # update again -> should have no effect
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+
+    # add three more tokens in one go
+    await stimulate( clock, dut, goodTokens=3, badTokens=3 )
+    # update the state -> 6,6 -> should not start a token, because bad tokens block it 
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+
+    # remove 1 token each
+    await stimulate( clock, dut, goodTokens=-1, badTokens=-1 )
+    
+    # update the state -> 5,5 -> should start a token now
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 1 and token_stop == 0, "the token should have been started, but got start: {}, stop: {}".format(token_start, token_stop)
+
+    await ClockCycles(clock, 5)
+
+    # add one bad token
+    await stimulate( clock, dut, badTokens=1 )
+
+    # update the state -> 5,6 -> should stop the token
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 1, "the token should have been stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+
+    # remove two tokens each
+    await stimulate( clock, dut, goodTokens=-2, badTokens=-2 )
+
+    # update the state -> 3,4 -> should not start a token
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=False )
+    assert state["goodTokenCount"] == 3 and state["badTokenCount"] == 4, "the token count should be 3,4 but got good: {}, bad: {}".format(state["goodTokenCount"], state["badTokenCount"])
+
+
+@cocotb.test()
+async def test_token_duration(dut):
+    dut._log.info("start")
+    cocotb.start_soon(Clock(dut.clk, 20, units="ns").start())
+    clock = dut.clk
+    dut.ena.value = 1
+
+    dut.ui_in.value = 0
+    dut.uio_in.value = 0
+
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 0
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 1
+    await ClockCycles(clock, 1)
+
+    # set good and bad token thresholds to 5 and duration to 5
+    await program_processor( clock, dut, goodTokenThreshold=5, badTokenThreshold=5, duration=5 )
+
+    await ClockCycles(clock, 1)
+
+    # send 5 good tokens to trigger
+    await stimulate( clock, dut, goodTokens=5 )
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 1 and token_stop == 0, "the token should have been started, but got start: {}, stop: {}".format(token_start, token_stop)
+
+    # count down the duration
+    await countdown( clock, dut )
+
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 4, "the remaining duration should be 4, but got {}".format(state["remainingDuration"])
+
+    # count down the duration
+    await countdown( clock, dut )
+
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 3, "the remaining duration should be 3, but got {}".format(state["remainingDuration"])
+
+    # count down the duration
+    await countdown( clock, dut )
+
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 2, "the remaining duration should be 2, but got {}".format(state["remainingDuration"])
+
+    # count down the duration
+    await countdown( clock, dut )
+
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 1, "the remaining duration should be 1, but got {}".format(state["remainingDuration"])
+
+
+    # count down the duration -> now we should have hit 0, but there is still enough input to trigger a new token,
+    # so the token should continue, i.e. not be stopped
+    await countdown( clock, dut )
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 5, "the remaining duration should be 5, but got {}".format(state["remainingDuration"])
+
+    # now take away the input
+    await stimulate( clock, dut, goodTokens=-5 )
+
+    # count down the duration
+    await countdown( clock, dut )
+
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 4, "the remaining duration should be 4, but got {}".format(state["remainingDuration"])
+
+    # count down the duration
+    await countdown( clock, dut )
+
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 3, "the remaining duration should be 3, but got {}".format(state["remainingDuration"])
+
+    # count down the duration
+    await countdown( clock, dut )
+
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 2, "the remaining duration should be 2, but got {}".format(state["remainingDuration"])
+
+    # count down the duration
+    await countdown( clock, dut )
+
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 0, "the token should not have been started/stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 1, "the remaining duration should be 1, but got {}".format(state["remainingDuration"])
+
+    # count down the duration
+    await countdown( clock, dut )
+
+
+    # check if the token is still running
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 1, "the token should have been stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 0, "the remaining duration should be 0, but got {}".format(state["remainingDuration"])
+
+    # trigger another token
+    await stimulate( clock, dut, goodTokens=5 )
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 1 and token_stop == 0, "the token should have been started, but got start: {}, stop: {}".format(token_start, token_stop)
+
+    # count down the duration
+    await countdown( clock, dut )
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 4, "the remaining duration should be 4, but got {}".format(state["remainingDuration"])
+
+    # cancel the token
+    await stimulate( clock, dut, goodTokens=-5, badTokens=6 )
+    token_start, token_stop = await tally( clock, dut )
+    assert token_start == 0 and token_stop == 1, "the token should have been stopped, but got start: {}, stop: {}".format(token_start, token_stop)
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=True )
+    assert state["remainingDuration"] == 0, "the remaining duration should be 0, but got {}".format(state["remainingDuration"])
+
+
+@cocotb.test()
+async def test_write_fast(dut):
+    dut._log.info("start")
+    cocotb.start_soon(Clock(dut.clk, 20, units="ns").start())
+    clock = dut.clk
+    dut.ena.value = 1
+
+    dut.ui_in.value = 0
+    dut.uio_in.value = 0
+
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 0
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 1
+    await ClockCycles(clock, 1)
+
+    # set good and bad token thresholds to 5 and duration to 5
+    await program_processor( clock, dut, goodTokenThreshold=5, badTokenThreshold=5, duration=5 )
+
+    await ClockCycles(clock, 1)
+    dut.ui_in.value = 0b0000
+    dut.uio_in.value = 1
+    await ClockCycles(clock, 5)
+    dut.ui_in.value = 0b0001
+    dut.uio_in.value = 1
+    await ClockCycles(clock, 3)
+    dut.ui_in.value = 0b0000
+    dut.uio_in.value = 0
+
+    await ClockCycles(clock, 1)
+
+    state = await get_processor_state( clock, dut, goodTokenThreshold=False, badTokenThreshold=False, duration=False, remainingDuration=False )
+
+    assert state["goodTokenCount"] == 5 and state["badTokenCount"] == 3, "the token count should be 5,3 but got good: {}, bad: {}".format(state["goodTokenCount"], state["badTokenCount"])
+
+
+@cocotb.test()
+async def test_reset(dut):
+    dut._log.info("start")
+    cocotb.start_soon(Clock(dut.clk, 20, units="ns").start())
+    clock = dut.clk
+    dut.ena.value = 1
+
+    dut.ui_in.value = 0
+    dut.uio_in.value = 0
+
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 0
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 1
+    await ClockCycles(clock, 1)
+
+    # set good and bad token thresholds to 5 and duration to 5
+    setState = dict(
+        goodTokenThreshold=5, 
+        badTokenThreshold=5, 
+        duration=5,
+        goodTokenCount=5,
+        badTokenCount=3,
+        remainingDuration=3
+    )
+    await program_processor( clock, dut, **setState )
+
+    # check state
+    state = await get_processor_state( clock, dut )
+    compare_processor_state(state, setState)
+
+    # reset
+    dut.rst_n.value = 0
+    await ClockCycles(clock, 1)
+    dut.rst_n.value = 1
+    await ClockCycles(clock, 1)
+
+    # check state
+    setState["goodTokenCount"] = 0
+    setState["badTokenCount"] = 0
+    setState["remainingDuration"] = 0
+    state = await get_processor_state( clock, dut )
+    compare_processor_state(state, setState)
+

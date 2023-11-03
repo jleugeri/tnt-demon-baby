@@ -18,7 +18,7 @@ module tb ();
 
     // this part dumps the trace to a vcd file that can be viewed with GTKWave
     initial begin
-        //$dumpfile ("tb.vcd");
+        $dumpfile ("tb.vcd");
         $dumpvars (0, tb);
         #1;
     end

@@ -18,7 +18,7 @@ ifneq ($(GATES),yes)
 # this is the only part you should need to modify:
 WAVES 			 = 1
 
-VERILOG_SOURCES += $(PWD)/tt_um_jleugeri_ttt_processor.sv $(PWD)/tt_um_jleugeri_ticktocktokens.sv
+VERILOG_SOURCES += $(PWD)/ttt_processor.sv $(PWD)/tt_um_jleugeri_ticktocktokens.sv
 VERILOG_SOURCES += $(PWD)/tb.sv
 
 else

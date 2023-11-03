@@ -7,7 +7,7 @@ project:
 # Source files must be in ./src and you must list each source file separately
   source_files:
     - tt_um_jleugeri_ticktocktokens.sv
-    - tt_um_jleugeri_ttt_processor.sv
+    - ttt_processor.sv
   top_module:  "tt_um_jleugeri_ticktocktokens"      # Put the name of your top module here, must start with "tt_um_". Make it unique by including your github username
 
 # How many tiles your design occupies? A single tile is about 167x108 uM.
@@ -46,14 +46,14 @@ documentation:
     - (reserved)
 # A description of what the outputs do (e.g. status LED, SPI MISO, etc)
   outputs:
-    - data 0 | token start flag
-    - data 1 | token stop flag
-    - data 2
-    - data 3
-    - data 4
-    - data 5
-    - data 6
-    - data 7
+    - data bit 0 | token start flag
+    - data bit 1 | token stop flag
+    - data bit 2
+    - data bit 3
+    - data bit 4
+    - data bit 5
+    - data bit 6
+    - data bit 7
 # A description of what the bidirectional I/O pins do (e.g. I2C SDA, I2C SCL, etc)
   bidirectional:
     - data bit 0
@@ -70,5 +70,5 @@ documentation:
   external_hw:  "arduino to generate I/O"      # Describe any external hardware needed
   discord:      "jleugeri"      # Your discord handle, used for communication and automatically assigning tapeout role after a submission
   doc_link:     "README.md"      # URL to longer form documentation, eg the README.md in your repository
-  clock_hz:     100000000       # Clock frequency in Hz (if required)
+  clock_hz:     10000000       # Clock frequency in Hz (if required)
   picture:      "event_processor.svg"      # relative path to a picture in your repository (must be 512kb or less)

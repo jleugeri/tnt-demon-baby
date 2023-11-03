@@ -1,6 +1,6 @@
 
 
-module tt_um_jleugeri_ttt_processor #(
+module ttt_processor #(
     parameter NEW_TOKEN_BITS = 4,
     parameter TOKEN_BITS = 8,
     parameter DURATION_BITS = 8,
@@ -214,4 +214,4 @@ module tt_um_jleugeri_ttt_processor #(
         end
     end
 
-endmodule : tt_um_jleugeri_ttt_processor
+endmodule : ttt_processor

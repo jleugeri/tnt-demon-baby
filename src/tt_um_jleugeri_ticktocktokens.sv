@@ -87,7 +87,7 @@ module tt_um_jleugeri_ticktocktokens (
     assign reset = ~rst_n;
 
     // instantiate the main module
-    tt_um_jleugeri_ttt_processor #(
+    ttt_processor #(
         .NEW_TOKEN_BITS(NEW_TOKEN_BITS),
         .TOKEN_BITS(TOKEN_BITS),
         .DURATION_BITS(DURATION_BITS),
