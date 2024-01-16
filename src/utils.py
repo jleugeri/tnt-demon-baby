@@ -1,5 +1,6 @@
 import cocotb
 import numpy as np
+from matplotlib import pyplot as plt
 
 def to_n_bit_twos_complement(num, nbit):
     if num >= 0:
@@ -91,3 +92,21 @@ def diff_string(mat1: np.ndarray, mat2: np.ndarray, *labels, indent=2):
             mat2[coords]
         ) for (l, coords) in zip(zip(*concrete_labels), zip(*nz_indices))
     ])
+
+
+def plot_traces(times, token_starts, token_stops, labels=None, colors=None, ax = None, **kwargs):
+    if ax is None:
+        ax = plt.gca()
+
+    if labels is None:
+        labels = ["Token {}".format(i) for i in range(token_starts.shape[1])]
+    
+    if colors is None:
+        colors = plt.rcParams["axes.prop_cycle"].by_key()["color"][:token_starts.shape[1]]
+
+    traces = np.cumsum(token_starts - token_stops, axis=0)
+    for j,off in enumerate(np.arange(token_starts.shape[1], 0, -1)):
+        ax.fill_between(times, (traces[:,j]-0.5)*0.75 + off, -0.5*0.75 + off, step="pre", color=colors[j], label=labels[j], **kwargs)
+    ax.set_yticks(np.arange(token_starts.shape[1], 0, -1))
+    ax.set_yticklabels(labels)
+
